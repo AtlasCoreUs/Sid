@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+
+:root {
+  --sidebar-width: 20vw;
+  --sidebar-collapsed-width: 20px;
+  --dark-bg: #111827;
+  --light-bg: #f9fafb;
+  --font: 'Montserrat', sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background-color: var(--dark-bg);
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.light-mode {
+  background-color: var(--light-bg);
+  color: black;
+}
+
+textarea {
+  font-family: var(--font);
+  width: 100%;
+  min-height: 300px;
+  resize: vertical;
+}
