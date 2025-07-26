@@ -5,11 +5,12 @@ workflows:
     environment:
       node: latest
       vars:
-        NEXT_PUBLIC_BASE_URL: "https://atlascore.us" # modifiable
+        NEXT_PUBLIC_BASE_URL: "https://atlascore.us"
     scripts:
       - name: Install dependencies
         script: |
           npm install
+          npm install --save-dev typescript @types/react @types/node
       - name: Build the project
         script: |
           npm run build
@@ -21,3 +22,4 @@ workflows:
     publishing:
       scripts:
         - echo "✅ SID Web build complete!"
+
