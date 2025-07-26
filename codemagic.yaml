@@ -1,0 +1,23 @@
+workflows:
+  sid-web-release:
+    name: Sid Web Build
+    max_build_duration: 10
+    environment:
+      node: latest
+      vars:
+        NEXT_PUBLIC_BASE_URL: "https://atlascore.us" # modifiable
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Build the project
+        script: |
+          npm run build
+      - name: Export static site
+        script: |
+          npm run export
+    artifacts:
+      - out/**
+    publishing:
+      scripts:
+        - echo "✅ SID Web build complete!"
