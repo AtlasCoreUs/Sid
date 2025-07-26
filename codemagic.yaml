@@ -1,25 +1,13 @@
 workflows:
-  sid-web-release:
-    name: Sid Web Build
-    environment:
-      node: latest
-    scripts:
-      - name: Install web dependencies
-        script: |
-          npm install
-          npm run build
-          npm run export
-    artifacts:
-      - out/**
-    publishing:
-      scripts:
-        - echo "✅ Web build done."
-
   sid-android-release:
     name: Sid APK Build
     environment:
       flutter: stable
     scripts:
+      - name: Check Flutter setup
+        script: |
+          flutter --version
+          flutter doctor
       - name: Get Flutter packages
         script: |
           flutter pub get
@@ -30,5 +18,5 @@ workflows:
       - build/app/outputs/flutter-apk/app-release.apk
     publishing:
       scripts:
-        - echo "📦 APK built and ready!"
+        - echo "📦 SID APK build complete!"
 
