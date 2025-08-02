@@ -1,5 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+interface ChartData {
+  type: 'bar' | 'line' | 'pie' | 'doughnut' | 'radar';
+  data: {
+    labels: string[];
+    datasets: {
+      label: string;
+      data: number[];
+      backgroundColor?: string[];
+      borderColor?: string;
+      borderWidth?: number;
+    }[];
+  };
+  options?: any;
+}
+
+interface ImageData {
+  url: string;
+  alt: string;
+  caption?: string;
+}
+
+interface Template {
+  id: string;
+  name: string;
+  content: string;
+  category: string;
+  tags: string[];
+}
+
 interface Note {
   id: string;
   title: string;
@@ -8,6 +37,22 @@ interface Note {
   createdAt: Date;
   updatedAt: Date;
   tags: string[];
+  // Nouvelles fonctionnalités
+  type: 'text' | 'chart' | 'template' | 'image';
+  chartData?: ChartData;
+  images?: ImageData[];
+  templateId?: string;
+  isEncrypted?: boolean;
+  priority?: 'low' | 'medium' | 'high';
+  status?: 'draft' | 'published' | 'archived';
+  linkedNotes?: string[]; // IDs des notes liées
+  metadata?: {
+    wordCount: number;
+    characterCount: number;
+    readingTime: number;
+    lastAccessed: Date;
+    accessCount: number;
+  };
 }
 
 interface NotesManagerProps {
@@ -18,14 +63,116 @@ interface NotesManagerProps {
 export function NotesManager({ searchTerm, isDarkMode }: NotesManagerProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
-  const [categories, setCategories] = useState<string[]>(['Général', 'Idées', 'TODO', 'Projets', 'Urgent']);
+  const [categories, setCategories] = useState<string[]>(['Général', 'Idées', 'TODO', 'Projets', 'Urgent', 'Graphiques', 'Templates']);
   const [selectedCategory, setSelectedCategory] = useState<string>('Général');
   const [newNoteTitle, setNewNoteTitle] = useState('');
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
   const [recentNotes, setRecentNotes] = useState<string[]>([]);
   const [wordCount, setWordCount] = useState(0);
+  const [selectedNoteType, setSelectedNoteType] = useState<'text' | 'chart' | 'template' | 'image'>('text');
+  const [showChartBuilder, setShowChartBuilder] = useState(false);
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+  const [analytics, setAnalytics] = useState({
+    totalNotes: 0,
+    totalWords: 0,
+    mostUsedCategory: '',
+    productivityScore: 0,
+    weeklyProgress: [] as { date: string; notes: number; words: number }[]
+  });
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Templates prédéfinis
+  const defaultTemplates: Template[] = [
+    {
+      id: 'meeting',
+      name: '📅 Réunion',
+      content: `# Réunion - [Titre]
+
+## 📋 Ordre du jour
+- [ ] Point 1
+- [ ] Point 2
+- [ ] Point 3
+
+## 👥 Participants
+- 
+
+## 📝 Notes
+- 
+
+## ✅ Actions à suivre
+- [ ] Action 1 - Assigné à: - Date: 
+- [ ] Action 2 - Assigné à: - Date: 
+
+## 📅 Prochaine réunion
+Date: 
+Heure: 
+`,
+      category: 'Templates',
+      tags: ['réunion', 'professionnel']
+    },
+    {
+      id: 'project',
+      name: '🚀 Projet',
+      content: `# Projet - [Nom du projet]
+
+## 🎯 Objectifs
+- 
+
+## 📋 Tâches
+### Phase 1
+- [ ] Tâche 1
+- [ ] Tâche 2
+
+### Phase 2
+- [ ] Tâche 3
+- [ ] Tâche 4
+
+## 📊 Budget
+- Estimation: 
+- Dépensé: 
+- Restant: 
+
+## ⏰ Timeline
+- Début: 
+- Fin prévue: 
+- Jalons: 
+
+## 🛠 Ressources
+- 
+
+## 📈 Métriques
+- 
+`,
+      category: 'Templates',
+      tags: ['projet', 'gestion']
+    },
+    {
+      id: 'chart',
+      name: '📊 Graphique',
+      content: `# Graphique - [Titre]
+
+## 📈 Données
+- Série 1: 
+- Série 2: 
+- Série 3: 
+
+## 🎨 Configuration
+- Type: Bar/Line/Pie/Doughnut
+- Couleurs: 
+- Échelle: 
+
+## 📊 Résultats
+- 
+
+## 💡 Insights
+- 
+`,
+      category: 'Templates',
+      tags: ['graphique', 'données', 'analyse']
+    }
+  ];
 
   // Load notes from localStorage on mount
   useEffect(() => {
@@ -37,7 +184,17 @@ export function NotesManager({ searchTerm, isDarkMode }: NotesManagerProps) {
         ...note,
         createdAt: new Date(note.createdAt),
         updatedAt: new Date(note.updatedAt),
-        tags: note.tags || []
+        tags: note.tags || [],
+        // Handle new fields
+        type: note.type || 'text',
+        chartData: note.chartData || undefined,
+        images: note.images || undefined,
+        templateId: note.templateId || undefined,
+        isEncrypted: note.isEncrypted || false,
+        priority: note.priority || undefined,
+        status: note.status || undefined,
+        linkedNotes: note.linkedNotes || undefined,
+        metadata: note.metadata || undefined
       }));
       setNotes(parsedNotes);
       if (parsedNotes.length > 0 && !activeNoteId) {
@@ -75,7 +232,8 @@ Commencez à créer vos propres notes en cliquant sur le bouton ➕ !`,
           category: 'Général',
           createdAt: new Date(),
           updatedAt: new Date(),
-          tags: ['guide', 'aide']
+          tags: ['guide', 'aide'],
+          type: 'text'
         },
         {
           id: '2',
@@ -103,7 +261,8 @@ Utiliser cette section pour brainstormer et planifier vos futurs projets !`,
           category: 'Idées',
           createdAt: new Date(Date.now() - 86400000), // 1 day ago
           updatedAt: new Date(Date.now() - 86400000),
-          tags: ['projets', 'todo', 'développement']
+          tags: ['projets', 'todo', 'développement'],
+          type: 'text'
         },
         {
           id: '3',
@@ -135,7 +294,8 @@ N'oubliez pas de cocher ✅ les tâches terminées !`,
           category: 'TODO',
           createdAt: new Date(Date.now() - 172800000), // 2 days ago
           updatedAt: new Date(Date.now() - 3600000), // 1 hour ago
-          tags: ['urgent', 'travail', 'personnel']
+          tags: ['urgent', 'travail', 'personnel'],
+          type: 'text'
         }
       ];
       
@@ -241,7 +401,17 @@ N'oubliez pas de cocher ✅ les tâches terminées !`,
       category: selectedCategory,
       createdAt: new Date(),
       updatedAt: new Date(),
-      tags: []
+      tags: [],
+      type: selectedNoteType, // Use selected note type
+      // Initialize new fields based on type
+      chartData: selectedNoteType === 'chart' ? { type: 'bar', data: { labels: [], datasets: [{ label: 'Data', data: [] }] } } : undefined,
+      images: selectedNoteType === 'image' ? [] : undefined,
+      templateId: selectedNoteType === 'template' ? defaultTemplates[0].id : undefined, // Default to first template
+      isEncrypted: false, // Default to false
+      priority: undefined, // Default to undefined
+      status: undefined, // Default to undefined
+      linkedNotes: undefined, // Default to undefined
+      metadata: undefined // Default to undefined
     };
 
     setNotes(prev => [newNote, ...prev]);
