@@ -16,20 +16,23 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { DynamicResponseGenerator, ChatContext } from '@/lib/ai/contextual-chat'
 
 interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  suggestions?: Array<{
+    text: string
+    value: any
+  }>
 }
 
 interface AIChatAssistantProps {
   context?: {
     step?: string
-    businessInfo?: any
-    template?: string
-    features?: string[]
+    data?: any
   }
   onSuggestion?: (suggestion: any) => void
 }
@@ -41,7 +44,15 @@ export default function AIChatAssistant({ context, onSuggestion }: AIChatAssista
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | null>(null)
+  const [userProfile, setUserProfile] = useState({
+    techLevel: 'beginner' as 'beginner' | 'intermediate' | 'expert',
+    businessType: '',
+    previousQuestions: [] as string[]
+  })
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  // Générateur de réponses intelligent
+  const responseGenerator = new DynamicResponseGenerator()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -52,11 +63,10 @@ export default function AIChatAssistant({ context, onSuggestion }: AIChatAssista
   }, [messages])
 
   useEffect(() => {
-    // Message de bienvenue contextuel
     if (isOpen && messages.length === 0) {
       const welcomeMessage = getWelcomeMessage()
       setMessages([{
-        id: '1',
+        id: Date.now().toString(),
         role: 'assistant',
         content: welcomeMessage,
         timestamp: new Date()
@@ -80,48 +90,83 @@ export default function AIChatAssistant({ context, onSuggestion }: AIChatAssista
   }
 
   const sendMessage = async () => {
-    if (!input.trim() || isLoading) return
+    if (!input.trim()) return
 
-    const userMessage: Message = {
+    const userMessage = input.trim()
+    const newUserMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input,
+      content: userMessage,
       timestamp: new Date()
     }
 
-    setMessages(prev => [...prev, userMessage])
+    setMessages(prev => [...prev, newUserMessage])
     setInput('')
     setIsLoading(true)
+    
+    // Mettre à jour le profil utilisateur
+    setUserProfile(prev => ({
+      ...prev,
+      previousQuestions: [...prev.previousQuestions.slice(-4), userMessage]
+    }))
 
     try {
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: input,
-          context,
-          conversationId
-        })
-      })
-
-      if (!response.ok) throw new Error('Erreur API')
-
-      const data = await response.json()
+      // Créer le contexte pour le générateur
+      const chatContext: ChatContext = {
+        currentStep: context?.step || 'general',
+        userProfile: userProfile,
+        appData: context?.data
+      }
       
-      const aiMessage: Message = {
+      // Générer une réponse intelligente localement d'abord
+      const smartResponse = responseGenerator.generateResponse(chatContext, userMessage)
+      
+      // Afficher immédiatement la réponse intelligente
+      const smartMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.response,
+        content: smartResponse,
         timestamp: new Date()
       }
+      setMessages(prev => [...prev, smartMessage])
+      
+      // Détecter si des suggestions sont mentionnées
+      detectSuggestions(smartResponse)
+      
+      // Ensuite, appeler l'API pour une réponse plus approfondie si nécessaire
+      if (userMessage.length > 20 && !smartResponse.includes("Je peux aussi:")) {
+        const response = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: userMessage,
+            context: context,
+            conversationId: conversationId
+          })
+        })
 
-      setMessages(prev => [...prev, aiMessage])
-      setConversationId(data.conversationId)
+        if (!response.ok) throw new Error('Erreur API')
 
-      // Détecter et extraire les suggestions
-      detectSuggestions(data.response)
+        const data = await response.json()
+        
+        // Ajouter la réponse API comme un complément
+        if (data.response && data.response !== smartResponse) {
+          const apiMessage: Message = {
+            id: (Date.now() + 2).toString(),
+            role: 'assistant',
+            content: "📚 Info supplémentaire: " + data.response,
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, apiMessage])
+        }
+        
+        if (data.conversationId) {
+          setConversationId(data.conversationId)
+        }
+      }
     } catch (error) {
-      toast.error('Oops ! Un problème est survenu. Réessaie stp ! 🙏')
+      console.error('Erreur chat:', error)
+      // L'utilisateur a déjà reçu une réponse intelligente, pas besoin d'erreur
     } finally {
       setIsLoading(false)
     }
@@ -129,16 +174,33 @@ export default function AIChatAssistant({ context, onSuggestion }: AIChatAssista
 
   const detectSuggestions = (response: string) => {
     // Détecter les suggestions de couleurs
-    const colorRegex = /#([A-Fa-f0-9]{6})/g
-    const colors = response.match(colorRegex)
-    if (colors && onSuggestion) {
-      onSuggestion({ type: 'colors', data: colors })
+    const colorMatch = response.match(/couleurs?:?\s*#([A-Fa-f0-9]{6})/gi)
+    if (colorMatch && onSuggestion) {
+      const colors = colorMatch.map(match => {
+        const hex = match.match(/#([A-Fa-f0-9]{6})/i)
+        return hex ? `#${hex[1]}` : null
+      }).filter(Boolean)
+      
+      if (colors.length > 0) {
+        onSuggestion({ type: 'colors', values: colors })
+      }
     }
-
-    // Détecter les suggestions de fonctionnalités
-    if (response.includes('fonctionnalité') || response.includes('feature')) {
-      // Parser les suggestions (à améliorer selon le format de réponse)
-      // onSuggestion({ type: 'features', data: [...] })
+    
+    // Détecter les suggestions de features
+    if (response.includes("fonctionnalités recommandées") && onSuggestion) {
+      const features = response.match(/- (.+)/g)?.map(f => f.replace('- ', ''))
+      if (features) {
+        onSuggestion({ type: 'features', values: features })
+      }
+    }
+    
+    // Détecter les suggestions de templates
+    if (response.includes("template") && response.includes("recommand") && onSuggestion) {
+      const templates = ['restaurant', 'clinic', 'salon', 'gym', 'hotel', 'agency']
+      const suggestedTemplate = templates.find(t => response.toLowerCase().includes(t))
+      if (suggestedTemplate) {
+        onSuggestion({ type: 'template', value: suggestedTemplate })
+      }
     }
   }
 
@@ -148,28 +210,60 @@ export default function AIChatAssistant({ context, onSuggestion }: AIChatAssista
       sendMessage()
     }
   }
+  
+  // Détecter le niveau technique de l'utilisateur
+  useEffect(() => {
+    if (messages.length > 3) {
+      const userMessages = messages.filter(m => m.role === 'user').map(m => m.content.toLowerCase())
+      
+      // Analyser le niveau technique basé sur le vocabulaire
+      const techWords = ['api', 'database', 'backend', 'frontend', 'deploy', 'server', 'code']
+      const beginnerWords = ['comment', 'difficile', 'compliqué', 'aide', 'comprends pas']
+      
+      const techScore = userMessages.reduce((score, msg) => {
+        return score + techWords.filter(word => msg.includes(word)).length
+      }, 0)
+      
+      const beginnerScore = userMessages.reduce((score, msg) => {
+        return score + beginnerWords.filter(word => msg.includes(word)).length
+      }, 0)
+      
+      if (techScore > 3) {
+        setUserProfile(prev => ({ ...prev, techLevel: 'expert' }))
+      } else if (beginnerScore > 2) {
+        setUserProfile(prev => ({ ...prev, techLevel: 'beginner' }))
+      } else {
+        setUserProfile(prev => ({ ...prev, techLevel: 'intermediate' }))
+      }
+    }
+  }, [messages])
 
   return (
     <>
-      {/* Floating Button */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-primary to-secondary shadow-lg flex items-center justify-center group"
+            className="fixed bottom-6 right-6 p-4 bg-gradient-to-r from-primary to-pink-600 rounded-full shadow-lg hover:shadow-xl transition-all group z-50"
           >
-            <Sparkles className="w-6 h-6 text-white" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+            <MessageCircle className="w-6 h-6 text-white" />
+            <motion.div
+              className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+            />
+            <motion.div
+              className="absolute -inset-2 bg-gradient-to-r from-primary to-pink-600 rounded-full opacity-30 blur-lg group-hover:opacity-50 transition-opacity"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ repeat: Infinity, duration: 3 }}
+            />
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -184,39 +278,42 @@ export default function AIChatAssistant({ context, onSuggestion }: AIChatAssista
             )}
           >
             <GlassCard className="h-full flex flex-col overflow-hidden">
-              {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900" />
+                  <div className="p-2 bg-gradient-to-r from-primary to-pink-600 rounded-lg">
+                    <Sparkles className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">SID Assistant</h3>
-                    <p className="text-xs text-gray-400">Toujours là pour toi ! 🚀</p>
+                    <h3 className="font-semibold text-white">SID Assistant</h3>
+                    <p className="text-xs text-gray-400">
+                      {isLoading ? 'Réfléchit...' : 'En ligne'}
+                    </p>
                   </div>
                 </div>
+                
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setIsMinimized(!isMinimized)}
                     className="p-1 hover:bg-white/10 rounded transition-colors"
                   >
-                    {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+                    {isMinimized ? (
+                      <Maximize2 className="w-4 h-4 text-gray-400" />
+                    ) : (
+                      <Minimize2 className="w-4 h-4 text-gray-400" />
+                    )}
                   </button>
+                  
                   <button
                     onClick={() => setIsOpen(false)}
                     className="p-1 hover:bg-white/10 rounded transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-4 h-4 text-gray-400" />
                   </button>
                 </div>
               </div>
 
               {!isMinimized && (
                 <>
-                  {/* Messages */}
                   <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {messages.map((message) => (
                       <motion.div
@@ -230,68 +327,90 @@ export default function AIChatAssistant({ context, onSuggestion }: AIChatAssista
                       >
                         <div
                           className={cn(
-                            "max-w-[80%] p-3 rounded-2xl",
+                            "max-w-[80%] rounded-lg p-3",
                             message.role === 'user'
-                              ? 'bg-primary/20 text-white ml-auto'
-                              : 'bg-white/10 text-gray-100'
+                              ? 'bg-primary text-white'
+                              : 'bg-white/10 text-gray-200'
                           )}
                         >
                           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {message.timestamp.toLocaleTimeString('fr-FR', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
+                          
+                          {message.suggestions && (
+                            <div className="mt-2 space-y-1">
+                              {message.suggestions.map((suggestion, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => onSuggestion?.(suggestion.value)}
+                                  className="block w-full text-left text-xs bg-white/10 hover:bg-white/20 rounded px-2 py-1 transition-colors"
+                                >
+                                  {suggestion.text}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          
+                          <p className="text-xs opacity-50 mt-1">
+                            {message.timestamp.toLocaleTimeString('fr-FR', {
+                              hour: '2-digit',
+                              minute: '2-digit'
                             })}
                           </p>
                         </div>
                       </motion.div>
                     ))}
+                    
                     {isLoading && (
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className="flex justify-start"
                       >
-                        <div className="bg-white/10 p-3 rounded-2xl">
+                        <div className="bg-white/10 rounded-lg p-3">
                           <div className="flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span className="text-sm">SID réfléchit...</span>
+                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                            <span className="text-sm text-gray-400">
+                              SID réfléchit...
+                            </span>
                           </div>
                         </div>
                       </motion.div>
                     )}
+                    
                     <div ref={messagesEndRef} />
                   </div>
 
-                  {/* Input */}
                   <div className="p-4 border-t border-white/10">
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        placeholder="Pose ta question..."
-                        className="flex-1 px-4 py-2 bg-white/10 rounded-full text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        placeholder="Pose-moi une question..."
+                        className="flex-1 bg-white/10 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
                         disabled={isLoading}
                       />
-                      <GlassButton
-                        variant="neon"
-                        size="sm"
+                      
+                      <button
                         onClick={sendMessage}
-                        disabled={!input.trim() || isLoading}
-                        className="rounded-full"
+                        disabled={isLoading || !input.trim()}
+                        className="p-2 bg-primary hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
                       >
-                        <Send className="w-4 h-4" />
-                      </GlassButton>
+                        <Send className="w-4 h-4 text-white" />
+                      </button>
                     </div>
                     
-                    {/* Quick Actions */}
-                    <div className="flex gap-2 mt-3">
-                      <button className="text-xs text-gray-400 hover:text-primary transition-colors flex items-center gap-1">
+                    <div className="flex items-center gap-4 mt-2">
+                      <button className="text-xs text-gray-400 hover:text-gray-300 transition-colors flex items-center gap-1">
                         <History className="w-3 h-3" />
                         Historique
                       </button>
+                      
+                      <span className="text-xs text-gray-500">
+                        Niveau: {userProfile.techLevel === 'beginner' ? '🌱 Débutant' : 
+                                userProfile.techLevel === 'intermediate' ? '🌿 Intermédiaire' : 
+                                '🌳 Expert'}
+                      </span>
                     </div>
                   </div>
                 </>
