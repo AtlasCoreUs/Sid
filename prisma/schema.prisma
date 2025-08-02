@@ -1,0 +1,279 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String
+  password        String
+  avatar          String?
+  role            Role      @default(USER)
+  emailVerified   Boolean   @default(false)
+  stripeCustomerId String?  @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  apps            App[]
+  sessions        Session[]
+  aiConversations AIConversation[]
+  notifications   Notification[]
+  subscription    Subscription?
+  payments        Payment[]
+  
+  @@index([email])
+}
+
+// App Model
+model App {
+  id              String    @id @default(cuid())
+  name            String
+  slug            String    @unique
+  description     String?
+  template        String
+  customDomain    String?   @unique
+  published       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  settings        AppSettings?
+  analytics       AppAnalytics[]
+  pages           Page[]
+  media           Media[]
+  forms           Form[]
+  
+  @@index([userId])
+  @@index([slug])
+}
+
+// App Settings
+model AppSettings {
+  id              String    @id @default(cuid())
+  theme           String    @default("dark")
+  primaryColor    String    @default("#6366f1")
+  secondaryColor  String    @default("#a855f7")
+  accentColor     String    @default("#3b82f6")
+  logo            String?
+  favicon         String?
+  features        Json      @default("[]")
+  metadata        Json?
+  
+  // Relations
+  appId           String    @unique
+  app             App       @relation(fields: [appId], references: [id], onDelete: Cascade)
+}
+
+// Analytics
+model AppAnalytics {
+  id              String    @id @default(cuid())
+  date            DateTime  @default(now())
+  visitors        Int       @default(0)
+  pageViews       Int       @default(0)
+  uniqueVisitors  Int       @default(0)
+  avgSessionTime  Float     @default(0)
+  bounceRate      Float     @default(0)
+  conversions     Int       @default(0)
+  
+  // Relations
+  appId           String
+  app             App       @relation(fields: [appId], references: [id], onDelete: Cascade)
+  
+  @@index([appId, date])
+}
+
+// Pages
+model Page {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String
+  content         Json
+  isHomePage      Boolean   @default(false)
+  published       Boolean   @default(true)
+  order           Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  appId           String
+  app             App       @relation(fields: [appId], references: [id], onDelete: Cascade)
+  
+  @@unique([appId, slug])
+  @@index([appId])
+}
+
+// Media
+model Media {
+  id              String    @id @default(cuid())
+  filename        String
+  url             String
+  type            MediaType
+  size            Int
+  width           Int?
+  height          Int?
+  createdAt       DateTime  @default(now())
+  
+  // Relations
+  appId           String
+  app             App       @relation(fields: [appId], references: [id], onDelete: Cascade)
+  
+  @@index([appId])
+}
+
+// Forms
+model Form {
+  id              String    @id @default(cuid())
+  name            String
+  fields          Json
+  submissions     FormSubmission[]
+  createdAt       DateTime  @default(now())
+  
+  // Relations
+  appId           String
+  app             App       @relation(fields: [appId], references: [id], onDelete: Cascade)
+  
+  @@index([appId])
+}
+
+// Form Submissions
+model FormSubmission {
+  id              String    @id @default(cuid())
+  data            Json
+  createdAt       DateTime  @default(now())
+  
+  // Relations
+  formId          String
+  form            Form      @relation(fields: [formId], references: [id], onDelete: Cascade)
+  
+  @@index([formId])
+}
+
+// AI Conversations
+model AIConversation {
+  id              String    @id @default(cuid())
+  messages        Json
+  context         Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+// Sessions
+model Session {
+  id              String    @id @default(cuid())
+  token           String    @unique
+  expiresAt       DateTime
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime  @default(now())
+  
+  // Relations
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([token])
+}
+
+// Notifications
+model Notification {
+  id              String    @id @default(cuid())
+  type            NotificationType
+  title           String
+  message         String
+  read            Boolean   @default(false)
+  data            Json?
+  createdAt       DateTime  @default(now())
+  
+  // Relations
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, read])
+}
+
+// Subscriptions
+model Subscription {
+  id              String    @id @default(cuid())
+  stripeCustomerId String   @unique
+  stripePriceId   String
+  stripeStatus    String
+  plan            Plan      @default(FREE)
+  currentPeriodEnd DateTime
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([stripeCustomerId])
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  APP_PUBLISHED
+  VISITOR_MILESTONE
+  SUBSCRIPTION_UPDATE
+  SUBSCRIPTION_UPDATED
+  SUBSCRIPTION_CANCELLED
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+}
+
+enum Plan {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+// Payment model
+model Payment {
+  id              String    @id @default(cuid())
+  userId          String
+  stripeInvoiceId String    @unique
+  amount          Float
+  currency        String
+  status          String
+  createdAt       DateTime  @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
