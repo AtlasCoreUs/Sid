@@ -1,0 +1,4 @@
+This project uses font Montserrat (regular)
+https://fonts.google.com/specimen/Montserrat
+
+If the macros don't work (you see black screen only), download and install Montserrat font or change the font in the Inspector Tab in Davinci Resolve.
