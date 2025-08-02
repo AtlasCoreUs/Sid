@@ -18,11 +18,28 @@ import {
   Plus,
   Search,
   Filter,
-  Brain
+  Brain,
+  FileText, 
+  Bold,
+  Italic,
+  Underline,
+  Highlighter,
+  Type,
+  Palette,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  List,
+  ListOrdered,
+  Link2,
+  Image
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { StudyTagsAI, STUDY_TAGS, StudyTag } from '@/lib/student/study-tags-system'
 import toast from 'react-hot-toast'
+import { useNotesStore } from '@/store/useNotesStore'
+import StudyTags from './StudyTags'
+import HandwritingCanvas from './HandwritingCanvas'
 
 interface Note {
   id: string
@@ -50,6 +67,60 @@ export default function FloatingSidebar() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const tagsAI = useRef(new StudyTagsAI()).current
   const userId = 'current-user' // À remplacer par l'ID réel
+
+  const [activeView, setActiveView] = useState<'notes' | 'canvas' | null>(null)
+  const [showFormattingBar, setShowFormattingBar] = useState(true)
+  const [carouselRotation, setCarouselRotation] = useState(0)
+  const [selectedTool, setSelectedTool] = useState(0)
+  
+  // Outils de formatage style Photoshop
+  const formattingTools = [
+    { icon: Bold, name: 'Gras', shortcut: 'Cmd+B', action: 'bold' },
+    { icon: Italic, name: 'Italique', shortcut: 'Cmd+I', action: 'italic' },
+    { icon: Underline, name: 'Souligné', shortcut: 'Cmd+U', action: 'underline' },
+    { icon: Highlighter, name: 'Surligneur', shortcut: 'Cmd+H', action: 'highlight' },
+    { icon: Type, name: 'Taille', submenu: ['12px', '14px', '16px', '18px', '24px'] },
+    { icon: Palette, name: 'Couleur', type: 'color' },
+    { icon: AlignLeft, name: 'Aligner gauche', action: 'align-left' },
+    { icon: AlignCenter, name: 'Centrer', action: 'align-center' },
+    { icon: AlignRight, name: 'Aligner droite', action: 'align-right' },
+    { icon: List, name: 'Liste', action: 'bullet-list' },
+    { icon: ListOrdered, name: 'Liste numérotée', action: 'numbered-list' },
+    { icon: Link2, name: 'Lien', action: 'link' },
+    { icon: Image, name: 'Image', action: 'image' },
+    { icon: Sparkles, name: 'IA Style', action: 'ai-style' }
+  ]
+
+  // Carrousel 3D d'outils
+  const mainTools = [
+    { icon: FileText, name: 'Notes', color: 'from-blue-500 to-cyan-500' },
+    { icon: Tag, name: 'Tags', color: 'from-purple-500 to-pink-500' },
+    { icon: Search, name: 'Recherche', color: 'from-green-500 to-emerald-500' },
+    { icon: Plus, name: 'Nouveau', color: 'from-orange-500 to-red-500' }
+  ]
+
+  const rotateCarousel = (direction: 'left' | 'right') => {
+    const increment = direction === 'left' ? -90 : 90
+    setCarouselRotation(prev => prev + increment)
+    setSelectedTool(prev => {
+      const newIndex = direction === 'left' 
+        ? (prev - 1 + mainTools.length) % mainTools.length
+        : (prev + 1) % mainTools.length
+      return newIndex
+    })
+  }
+
+  const applyFormatting = (action: string) => {
+    // Logique de formatage à implémenter avec l'éditeur de texte
+    console.log('Applying formatting:', action)
+    
+    // Animation de feedback
+    const button = document.querySelector(`[data-action="${action}"]`)
+    if (button) {
+      button.classList.add('scale-110')
+      setTimeout(() => button.classList.remove('scale-110'), 200)
+    }
+  }
 
   // Auto-save
   useEffect(() => {
@@ -178,296 +249,233 @@ export default function FloatingSidebar() {
 
   return (
     <>
-      {/* Bouton flottant */}
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.button
-            initial={{ scale: 0, x: 100 }}
-            animate={{ scale: 1, x: 0 }}
-            exit={{ scale: 0, x: 100 }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              setIsOpen(true)
-              if (!activeNote && notes.length === 0) {
-                createNewNote()
-              }
-            }}
-            className="fixed right-6 top-1/2 -translate-y-1/2 p-4 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full shadow-lg hover:shadow-xl transition-all z-50"
+      {/* Bouton flottant principal avec carrousel 3D */}
+      <motion.div
+        className="fixed right-6 bottom-24 z-50"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+      >
+        <div className="relative w-16 h-16 perspective-1000">
+          {/* Carrousel 3D */}
+          <motion.div
+            className="absolute inset-0 transform-style-3d"
+            animate={{ rotateY: carouselRotation }}
+            transition={{ type: "spring", stiffness: 100, damping: 20 }}
           >
-            <StickyNote className="w-6 h-6 text-white" />
-            <motion.div
-              className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-            />
-          </motion.button>
+            {mainTools.map((tool, index) => {
+              const rotation = index * 90
+              const isActive = index === selectedTool
+              
+              return (
+                <motion.button
+                  key={tool.name}
+                  onClick={() => {
+                    if (isActive) {
+                      setIsOpen(true)
+                      setActiveView(index === 0 ? 'notes' : null)
+                    }
+                  }}
+                  className={cn(
+                    "absolute inset-0 rounded-2xl shadow-lg",
+                    "flex items-center justify-center",
+                    "transition-all duration-300",
+                    isActive && "shadow-2xl scale-110"
+                  )}
+                  style={{
+                    transform: `rotateY(${rotation}deg) translateZ(32px)`,
+                    backfaceVisibility: 'hidden'
+                  }}
+                  whileHover={{ scale: isActive ? 1.15 : 1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className={cn(
+                    "w-full h-full rounded-2xl",
+                    "bg-gradient-to-br",
+                    tool.color,
+                    "flex items-center justify-center",
+                    "backdrop-blur-xl"
+                  )}>
+                    <tool.icon className="w-7 h-7 text-white" />
+                  </div>
+                </motion.button>
+              )
+            })}
+          </motion.div>
+
+          {/* Contrôles carrousel */}
+          <button
+            onClick={() => rotateCarousel('left')}
+            className="absolute -left-8 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center hover:bg-white/20 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4 text-white" />
+          </button>
+          <button
+            onClick={() => rotateCarousel('right')}
+            className="absolute -right-8 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center hover:bg-white/20 transition-colors"
+          >
+            <ChevronRight className="w-4 h-4 text-white" />
+          </button>
+        </div>
+
+        {/* Label de l'outil actuel */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap"
+        >
+          <span className="text-xs text-white/80 bg-black/50 backdrop-blur-xl px-3 py-1 rounded-full">
+            {mainTools[selectedTool].name}
+          </span>
+        </motion.div>
+      </motion.div>
+
+      {/* Barre de formatage style Photoshop */}
+      <AnimatePresence>
+        {isOpen && showFormattingBar && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          >
+            <div className="bg-black/90 backdrop-blur-xl rounded-2xl border border-white/10 p-2 shadow-2xl">
+              <div className="flex items-center gap-1">
+                {formattingTools.map((tool, index) => (
+                  <motion.div
+                    key={tool.name}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.03 }}
+                  >
+                    {tool.type === 'color' ? (
+                      <div className="relative group">
+                        <button
+                          className="p-2 rounded-lg hover:bg-white/10 transition-all group relative"
+                          title={tool.name}
+                        >
+                          <tool.icon className="w-4 h-4 text-white" />
+                          <input
+                            type="color"
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                            onChange={(e) => applyFormatting(`color:${e.target.value}`)}
+                          />
+                        </button>
+                      </div>
+                    ) : tool.submenu ? (
+                      <div className="relative group">
+                        <button
+                          className="p-2 rounded-lg hover:bg-white/10 transition-all"
+                          title={tool.name}
+                        >
+                          <tool.icon className="w-4 h-4 text-white" />
+                        </button>
+                        <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block">
+                          <div className="bg-black/90 backdrop-blur-xl rounded-lg border border-white/10 p-1">
+                            {tool.submenu.map(size => (
+                              <button
+                                key={size}
+                                onClick={() => applyFormatting(`size:${size}`)}
+                                className="block w-full px-3 py-1 text-xs text-white hover:bg-white/10 rounded transition-colors text-left"
+                              >
+                                {size}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        data-action={tool.action}
+                        onClick={() => applyFormatting(tool.action!)}
+                        className="p-2 rounded-lg hover:bg-white/10 transition-all relative group"
+                        title={`${tool.name} ${tool.shortcut || ''}`}
+                      >
+                        <tool.icon className="w-4 h-4 text-white" />
+                        {tool.shortcut && (
+                          <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-white/60 bg-black/80 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            {tool.shortcut}
+                          </span>
+                        )}
+                      </button>
+                    )}
+                  </motion.div>
+                ))}
+                
+                <div className="w-px h-6 bg-white/20 mx-1" />
+                
+                {/* Bouton IA Style */}
+                <motion.button
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: formattingTools.length * 0.03 }}
+                  onClick={() => applyFormatting('ai-enhance')}
+                  className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-medium hover:from-purple-700 hover:to-pink-700 transition-all flex items-center gap-1"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  IA Style
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
+      {/* Sidebar principale existante */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ x: 400, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 400, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25 }}
-            className={cn(
-              "fixed right-0 top-0 h-full bg-black/90 backdrop-blur-xl border-l border-white/10 shadow-2xl z-50 transition-all",
-              isMinimized ? "w-16" : "w-96"
-            )}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed right-0 top-0 h-full w-96 bg-black/90 backdrop-blur-xl border-l border-white/10 shadow-2xl z-40 overflow-hidden"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
-              {!isMinimized && (
-                <div className="flex items-center gap-2">
-                  <StickyNote className="w-5 h-5 text-purple-400" />
-                  <h3 className="font-semibold text-white">Notes Rapides</h3>
-                  <span className="text-xs text-gray-400">
-                    {notes.length} note{notes.length > 1 ? 's' : ''}
-                  </span>
-                </div>
-              )}
-              
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsMinimized(!isMinimized)}
-                  className="p-1 hover:bg-white/10 rounded transition-colors"
-                >
-                  {isMinimized ? 
-                    <ChevronLeft className="w-4 h-4 text-gray-400" /> : 
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  }
-                </button>
-                
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-white/10 rounded transition-colors"
-                >
-                  <X className="w-4 h-4 text-gray-400" />
-                </button>
-              </div>
+            {/* Header avec fermeture */}
+            <div className="p-6 border-b border-white/10 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <mainTools[selectedTool].icon className="w-5 h-5" />
+                {mainTools[selectedTool].name}
+              </h2>
+              <button
+                onClick={() => {
+                  setIsOpen(false)
+                  setActiveView(null)
+                }}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
             </div>
 
-            {!isMinimized && (
-              <div className="flex flex-col h-[calc(100%-60px)]">
-                {/* Actions rapides */}
-                <div className="flex items-center gap-2 p-3 border-b border-white/10">
-                  <button
-                    onClick={createNewNote}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-600/30 rounded-lg transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span className="text-sm">Nouvelle note</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => setShowTags(!showTags)}
-                    className={cn(
-                      "p-2 rounded-lg transition-colors",
-                      showTags ? "bg-purple-600/30 text-purple-400" : "hover:bg-white/10"
-                    )}
-                  >
-                    <Tag className="w-4 h-4" />
-                  </button>
-                  
-                  <button
-                    onClick={() => setShowAbbreviations(!showAbbreviations)}
-                    className={cn(
-                      "p-2 rounded-lg transition-colors",
-                      showAbbreviations ? "bg-purple-600/30 text-purple-400" : "hover:bg-white/10"
-                    )}
-                  >
-                    <Hash className="w-4 h-4" />
-                  </button>
+            {/* Contenu dynamique selon l'outil sélectionné */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {selectedTool === 0 && <StudyTags />}
+              {selectedTool === 1 && (
+                <div className="text-white">
+                  <h3 className="text-lg font-semibold mb-4">Gestion des Tags</h3>
+                  {/* Contenu tags */}
                 </div>
-
-                {/* Zone de notes */}
-                <div className="flex-1 p-4 overflow-y-auto">
-                  {activeNote ? (
-                    <div className="space-y-4">
-                      {/* Tags de la note */}
-                      {activeNote.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {activeNote.tags.map((tag, i) => (
-                            <span
-                              key={i}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs"
-                              style={{ 
-                                backgroundColor: `${tag.color}20`,
-                                borderColor: `${tag.color}40`,
-                                borderWidth: '1px'
-                              }}
-                            >
-                              <span>{tag.icon}</span>
-                              <span style={{ color: tag.color }}>{tag.label}</span>
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {/* Textarea */}
-                      <textarea
-                        ref={textareaRef}
-                        value={noteContent}
-                        onChange={(e) => setNoteContent(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Écris ta note ici... (Tab pour étendre les abréviations)"
-                        className="w-full h-[400px] bg-white/5 border border-white/10 rounded-lg p-4 text-white placeholder-gray-500 resize-none focus:outline-none focus:border-purple-500/50 transition-colors"
-                        style={{ fontFamily: 'monospace' }}
-                      />
-                      
-                      {/* Abréviations détectées */}
-                      {detectedAbbreviations.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-xs text-gray-400 flex items-center gap-2">
-                            <Brain className="w-3 h-3" />
-                            Nouvelles abréviations détectées:
-                          </p>
-                          {detectedAbbreviations.map((abbr, i) => (
-                            <div
-                              key={i}
-                              className="bg-white/5 border border-white/10 rounded-lg p-3 space-y-2"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-mono text-purple-400">
-                                  "{abbr.detected}"
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {Math.round(abbr.confidence * 100)}% sûr
-                                </span>
-                              </div>
-                              
-                              {abbr.suggestions.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                  {abbr.suggestions.map((suggestion, j) => (
-                                    <button
-                                      key={j}
-                                      onClick={() => learnAbbreviation(abbr.detected, suggestion)}
-                                      className="text-xs px-2 py-1 bg-purple-600/20 hover:bg-purple-600/30 rounded transition-colors"
-                                    >
-                                      → {suggestion}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                              
-                              <button
-                                onClick={() => {
-                                  const custom = prompt(`Que signifie "${abbr.detected}" ?`)
-                                  if (custom) {
-                                    learnAbbreviation(abbr.detected, custom)
-                                  }
-                                }}
-                                className="text-xs text-purple-400 hover:text-purple-300"
-                              >
-                                + Définir manuellement
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-center text-gray-500 mt-20">
-                      <StickyNote className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>Crée une nouvelle note pour commencer</p>
-                    </div>
-                  )}
+              )}
+              {selectedTool === 2 && (
+                <div className="text-white">
+                  <h3 className="text-lg font-semibold mb-4">Recherche Intelligente</h3>
+                  {/* Contenu recherche */}
                 </div>
-
-                {/* Tags suggérés */}
-                {showTags && activeNote && (
-                  <div className="border-t border-white/10 p-4">
-                    <p className="text-xs text-gray-400 mb-3">Étiquettes suggérées:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.values(STUDY_TAGS).map((tag) => (
-                        <button
-                          key={tag.id}
-                          onClick={() => addTag(tag)}
-                          disabled={activeNote.tags.some(t => t.id === tag.id)}
-                          className={cn(
-                            "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs transition-all",
-                            activeNote.tags.some(t => t.id === tag.id)
-                              ? "opacity-50 cursor-not-allowed"
-                              : "hover:scale-105"
-                          )}
-                          style={{ 
-                            backgroundColor: `${tag.color}20`,
-                            borderColor: `${tag.color}40`,
-                            borderWidth: '1px'
-                          }}
-                        >
-                          <span>{tag.icon}</span>
-                          <span style={{ color: tag.color }}>{tag.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Abréviations apprises */}
-                {showAbbreviations && activeNote && Object.keys(activeNote.abbreviations).length > 0 && (
-                  <div className="border-t border-white/10 p-4">
-                    <p className="text-xs text-gray-400 mb-3">Abréviations apprises:</p>
-                    <div className="space-y-1">
-                      {Object.entries(activeNote.abbreviations).map(([abbr, full]) => (
-                        <div key={abbr} className="text-xs">
-                          <span className="font-mono text-purple-400">{abbr}</span>
-                          <span className="text-gray-500"> → </span>
-                          <span className="text-gray-300">{full}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Liste des notes */}
-                {notes.length > 1 && (
-                  <div className="border-t border-white/10 p-4">
-                    <p className="text-xs text-gray-400 mb-3">Autres notes:</p>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {notes.filter(n => n.id !== activeNote?.id).map((note) => (
-                        <button
-                          key={note.id}
-                          onClick={() => {
-                            setActiveNote(note)
-                            setNoteContent(note.content)
-                          }}
-                          className="w-full text-left p-2 bg-white/5 hover:bg-white/10 rounded transition-colors"
-                        >
-                          <div className="text-xs text-gray-300 line-clamp-2">
-                            {note.content || 'Note vide...'}
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            {note.tags.slice(0, 3).map((tag, i) => (
-                              <span key={i} className="text-xs">
-                                {tag.icon}
-                              </span>
-                            ))}
-                            {note.tags.length > 3 && (
-                              <span className="text-xs text-gray-500">
-                                +{note.tags.length - 3}
-                              </span>
-                            )}
-                            <span className="text-xs text-gray-500 ml-auto">
-                              {new Date(note.updatedAt).toLocaleTimeString('fr-FR', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+              {selectedTool === 3 && (
+                <div className="text-white">
+                  <h3 className="text-lg font-semibold mb-4">Créer Nouveau</h3>
+                  {/* Contenu création */}
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Canvas handwriting si activeView === 'canvas' */}
+      {activeView === 'canvas' && <HandwritingCanvas />}
     </>
   )
 }
