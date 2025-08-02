@@ -1,0 +1,123 @@
+.tab {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+.tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.tab.active {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tabContent {
+  padding: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.titleContainer {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  display: block;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: text;
+}
+
+.titleInput {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  width: 100%;
+  outline: none;
+  padding: 0;
+}
+
+.titleInput:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+.date {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-top: 0.25rem;
+}
+
+.tabActions {
+  display: flex;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.tab:hover .tabActions {
+  opacity: 1;
+}
+
+.editButton,
+.deleteButton {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.editButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+
+.deleteButton:hover {
+  background: rgba(255, 0, 0, 0.2);
+  opacity: 1;
+}
+
+/* Light mode adjustments */
+.light .tab {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.light .tab:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.light .tab.active {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.light .editButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.light .deleteButton:hover {
+  background: rgba(255, 0, 0, 0.1);
+}
