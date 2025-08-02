@@ -1,5 +1,14 @@
 import React from 'react';
+import NoteSidebar from '../components/NoteSidebar';
 
 export default function Home() {
-  return <div>Hello SID HUD</div>;
+  return (
+    <>
+      <main style={{ padding: '2rem' }}>
+        <h1>SID HUD</h1>
+        <p>Bienvenue sur votre tableau de bord vivant.</p>
+      </main>
+      <NoteSidebar />
+    </>
+  );
 }
