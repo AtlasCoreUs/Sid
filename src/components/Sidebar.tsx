@@ -44,7 +44,8 @@ export default function Sidebar({ isDarkMode, setIsDarkMode }: SidebarProps) {
           <span className="sidebar-icon">📝</span>
           {isExpanded && (
             <div className="sidebar-title-section">
-              <h2 className="sidebar-title">Notes</h2>
+              <h2 className="sidebar-title">SID HUD</h2>
+              <div className="sid-subtitle">Interface de Notes Intelligente</div>
               <button 
                 className="theme-toggle"
                 onClick={() => setIsDarkMode(!isDarkMode)}
@@ -52,6 +53,11 @@ export default function Sidebar({ isDarkMode, setIsDarkMode }: SidebarProps) {
               >
                 {isDarkMode ? '☀️' : '🌙'}
               </button>
+            </div>
+          )}
+          {!isExpanded && (
+            <div className="sid-collapsed">
+              <span className="sid-label">SID</span>
             </div>
           )}
         </div>
