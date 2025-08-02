@@ -1,4 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { TagManager } from './TagManager';
+import { FormattingToolbar } from './FormattingToolbar';
+import { FileManager } from './FileManager';
+import { TableEditor } from './TableEditor';
+import { MarkdownEditor } from './MarkdownEditor';
+import { ImportExport } from './ImportExport';
+import { NoteTemplates } from './NoteTemplates';
 
 interface Note {
   id: string;
@@ -8,6 +15,13 @@ interface Note {
   createdAt: Date;
   updatedAt: Date;
   tags: string[];
+  isArchived?: boolean;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  reminder?: Date;
+  isLocked?: boolean;
+  password?: string;
+  tables?: string[][];
+  formattedContent?: string;
 }
 
 interface NotesManagerProps {
@@ -26,6 +40,15 @@ export function NotesManager({ searchTerm, isDarkMode }: NotesManagerProps) {
   const [wordCount, setWordCount] = useState(0);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showFileManager, setShowFileManager] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [isMarkdownMode, setIsMarkdownMode] = useState(false);
+  const [showTableEditor, setShowTableEditor] = useState(false);
+  const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [fontSize, setFontSize] = useState(16);
+  const [showImportExport, setShowImportExport] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   // Load notes from localStorage on mount
   useEffect(() => {
@@ -384,6 +407,29 @@ N'oubliez pas de cocher ✅ les tâches terminées !`,
           <span className="shortcut-item" title="Exporter">Ctrl+E</span>
           <span className="shortcut-item" title="Rechercher">Ctrl+F</span>
         </div>
+        <div className="action-buttons">
+          <button 
+            className="action-btn"
+            onClick={() => setShowFileManager(true)}
+            title="Gestionnaire de fichiers"
+          >
+            📁
+          </button>
+          <button 
+            className="action-btn"
+            onClick={() => setShowImportExport(true)}
+            title="Import/Export"
+          >
+            📤
+          </button>
+          <button 
+            className="action-btn"
+            onClick={() => setShowTemplates(!showTemplates)}
+            title="Templates"
+          >
+            📋
+          </button>
+        </div>
       </div>
 
       {/* Recent Notes */}
@@ -542,21 +588,83 @@ N'oubliez pas de cocher ✅ les tâches terminées !`,
             <span className="stat">📝 {wordCount} mots</span>
             <span className="stat">📏 {activeNote.content.length} caractères</span>
             <span className="stat">🕒 {activeNote.updatedAt.toLocaleTimeString()}</span>
+            <button
+              onClick={() => setIsMarkdownMode(!isMarkdownMode)}
+              className="mode-toggle-btn"
+              title={isMarkdownMode ? "Mode texte simple" : "Mode Markdown"}
+            >
+              {isMarkdownMode ? "📝" : "✏️"}
+            </button>
           </div>
           
-          <textarea
-            ref={textareaRef}
-            value={activeNote.content}
-            onChange={(e) => updateNoteContent(e.target.value)}
-            placeholder="Commencez à écrire votre note...
-
-💡 Astuces :
-• Ctrl+N : Nouvelle note
-• Ctrl+S : Sauvegarder
-• Ctrl+E : Exporter
-• Ctrl+F : Rechercher"
-            className="note-textarea"
+          {/* Tags Manager */}
+          <TagManager
+            tags={activeNote.tags}
+            onTagsChange={(newTags) => {
+              setNotes(prev => prev.map(note =>
+                note.id === activeNoteId
+                  ? { ...note, tags: newTags, updatedAt: new Date() }
+                  : note
+              ));
+            }}
+            isDarkMode={isDarkMode}
           />
+          
+          {/* Formatting Toolbar */}
+          {!isMarkdownMode && (
+            <FormattingToolbar
+              onFormat={(format, value) => {
+                // Implémenter le formatage ici
+                if (format === 'table') {
+                  setShowTableEditor(true);
+                }
+              }}
+              isDarkMode={isDarkMode}
+            />
+          )}
+          
+          {/* Editor Content */}
+          {isMarkdownMode ? (
+            <MarkdownEditor
+              content={activeNote.content}
+              onChange={updateNoteContent}
+              isDarkMode={isDarkMode}
+            />
+          ) : (
+            <textarea
+              ref={textareaRef}
+              value={activeNote.content}
+              onChange={(e) => updateNoteContent(e.target.value)}
+              placeholder="Commencez à écrire votre note..."
+              className="note-textarea"
+              style={{ fontSize: `${fontSize}px` }}
+            />
+          )}
+          
+          {/* Table Editor Modal */}
+          {showTableEditor && (
+            <div className="modal-overlay" onClick={() => setShowTableEditor(false)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <h3>Éditeur de tableau</h3>
+                <TableEditor
+                  onUpdate={(tableData) => {
+                    // Convertir le tableau en markdown
+                    const tableMarkdown = tableData.map((row, i) => {
+                      if (i === 0) {
+                        return '| ' + row.join(' | ') + ' |\n|' + row.map(() => '---').join('|') + '|';
+                      }
+                      return '| ' + row.join(' | ') + ' |';
+                    }).join('\n');
+                    
+                    updateNoteContent(activeNote.content + '\n\n' + tableMarkdown + '\n\n');
+                    setShowTableEditor(false);
+                  }}
+                  isDarkMode={isDarkMode}
+                />
+                <button onClick={() => setShowTableEditor(false)} className="close-modal-btn">Fermer</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -579,6 +687,53 @@ N'oubliez pas de cocher ✅ les tâches terminées !`,
             </button>
           </div>
         </div>
+      )}
+      
+      {/* Templates */}
+      {showTemplates && (
+        <NoteTemplates
+          onSelectTemplate={(template) => {
+            const newNote: Note = {
+              id: Date.now().toString(),
+              title: template.name,
+              content: template.content,
+              category: template.category,
+              tags: template.tags,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            };
+            setNotes(prev => [newNote, ...prev]);
+            setActiveNoteId(newNote.id);
+            setShowTemplates(false);
+          }}
+          isDarkMode={isDarkMode}
+        />
+      )}
+      
+      {/* File Manager Modal */}
+      {showFileManager && (
+        <FileManager
+          notes={notes}
+          onSelectNote={(noteId) => {
+            setActiveNoteId(noteId);
+            addToRecent(noteId);
+          }}
+          onClose={() => setShowFileManager(false)}
+          isDarkMode={isDarkMode}
+        />
+      )}
+      
+      {/* Import/Export Modal */}
+      {showImportExport && (
+        <ImportExport
+          notes={notes}
+          onImport={(importedNotes) => {
+            setNotes(prev => [...prev, ...importedNotes]);
+            setShowImportExport(false);
+          }}
+          onClose={() => setShowImportExport(false)}
+          isDarkMode={isDarkMode}
+        />
       )}
     </div>
   );
