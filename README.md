@@ -1,363 +1,332 @@
-# 🚀 SID HUD – Interface de Notes Intelligente Révolutionnaire
+# Atlas Core SID - Smart Information Dashboard
 
-> Une application de prise de notes de niveau enterprise qui dépasse Notion et Obsidian
+<div align="center">
+  <img src="public/logo.png" alt="Atlas Core SID Logo" width="200" />
+  
+  [![CI/CD Pipeline](https://github.com/yourusername/atlas-core-sid/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/atlas-core-sid/actions/workflows/ci.yml)
+  [![codecov](https://codecov.io/gh/yourusername/atlas-core-sid/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/atlas-core-sid)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+</div>
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-Strict-blue.svg)
-![Next.js](https://img.shields.io/badge/Next.js-Latest-black.svg)
-![Tests](https://img.shields.io/badge/Tests-Jest%20%2B%20RTL-green.svg)
-![PWA](https://img.shields.io/badge/PWA-Ready-orange.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+## 🚀 Overview
 
-## 🌟 Fonctionnalités Révolutionnaires
+Atlas Core SID is an advanced smart information dashboard that combines powerful note-taking capabilities with AI-powered features, real-time collaboration, and enterprise-grade security.
 
-### 🤖 **Assistant IA Avancé**
-- ✅ **Analyse de sentiment** : Détection automatique du ton de vos notes
-- ✅ **Extraction de mots-clés** : Identification intelligente des concepts clés
-- ✅ **Suggestions d'amélioration** : Recommandations pour optimiser vos notes
-- ✅ **Génération de contenu** : Création automatique basée sur vos prompts
-- ✅ **Analyse de complexité** : Évaluation du niveau de lecture
-- ✅ **Résumé automatique** : Synthèse intelligente de vos notes
+### ✨ Key Features
 
-### 🤝 **Hub de Collaboration Enterprise**
-- ✅ **Commentaires en temps réel** : Discussion collaborative sur chaque note
-- ✅ **Système d'activité** : Suivi complet des modifications et interactions
-- ✅ **Partage avancé** : Liens sécurisés avec permissions granulaires
-- ✅ **Gestion d'équipe** : Invitation et gestion des collaborateurs
-- ✅ **Notifications intelligentes** : Alertes contextuelles et pertinentes
-- ✅ **Workflow d'approbation** : Processus de validation configurable
+- **🤖 AI-Powered Intelligence**
+  - Smart content analysis and summarization
+  - Natural language processing
+  - Voice-to-text transcription
+  - Handwriting recognition (OCR)
+  - Intelligent search with semantic understanding
 
-### 🧠 **Graphe de Connaissances Interactif**
-- ✅ **Visualisation dynamique** : Représentation graphique de vos notes
-- ✅ **Liens automatiques** : Détection des connexions entre concepts
-- ✅ **Navigation intuitive** : Zoom, pan et filtres avancés
-- ✅ **Modes de visualisation** : Force, hiérarchique, circulaire
-- ✅ **Recherche visuelle** : Trouvez des notes par exploration graphique
-- ✅ **Export de graphes** : Sauvegarde et partage de vos visualisations
+- **📝 Advanced Note Management**
+  - Rich text editor with Markdown support
+  - Version control and history tracking
+  - Folders and tags organization
+  - Full-text search with Elasticsearch
+  - Note templates and quick actions
 
-### 📊 **Analytics et Insights**
-- ✅ **Statistiques détaillées** : Métriques de productivité et d'engagement
-- ✅ **Dashboard personnalisé** : Vue d'ensemble de votre activité
-- ✅ **Tendances temporelles** : Évolution de vos habitudes d'écriture
-- ✅ **Rapports automatisés** : Génération de rapports périodiques
-- ✅ **Scores de productivité** : Évaluation de votre efficacité
-- ✅ **Objectifs et tracking** : Définition et suivi de vos objectifs
+- **🎯 Productivity Tools**
+  - Task management integration
+  - Calendar synchronization
+  - Reminders and notifications
+  - Time tracking
+  - Goal setting and progress tracking
 
-### 🔒 **Sécurité et Conformité Enterprise**
-- ✅ **Chiffrement de bout en bout** : Protection maximale de vos données
-- ✅ **Authentification multi-facteurs** : Sécurité renforcée
-- ✅ **Audit trail complet** : Traçabilité de toutes les actions
-- ✅ **Conformité RGPD** : Respect des réglementations européennes
-- ✅ **Sauvegarde automatique** : Protection contre la perte de données
-- ✅ **Récupération de données** : Restauration rapide et fiable
+- **👥 Collaboration Features**
+  - Real-time collaborative editing
+  - Sharing with permissions control
+  - Comments and mentions
+  - Activity feeds
+  - Team workspaces
 
-### 🎨 **Interface Ultra-Moderne**
-- ✅ **Design system cohérent** : Expérience utilisateur harmonieuse
-- ✅ **Animations fluides** : Transitions et micro-interactions
-- ✅ **Mode sombre/clair** : Adaptation automatique à l'environnement
-- ✅ **Responsive design** : Optimisation pour tous les appareils
-- ✅ **Accessibilité complète** : Conformité WCAG 2.1 AA
-- ✅ **Personnalisation avancée** : Thèmes et préférences personnalisables
+- **🔒 Security & Privacy**
+  - End-to-end encryption
+  - Two-factor authentication
+  - Role-based access control
+  - Audit logs
+  - GDPR compliant
 
-## 🛠 Stack Technologique Enterprise
+- **📱 Multi-Platform Support**
+  - Progressive Web App (PWA)
+  - Native mobile apps (iOS/Android)
+  - Desktop app (Windows/macOS/Linux)
+  - Offline mode with sync
+
+## 🛠️ Technology Stack
 
 ### Frontend
-- **Next.js 14** : Framework React moderne avec SSR/SSG
-- **TypeScript Strict** : Typage statique pour la robustesse
-- **Zustand** : Gestion d'état performante et simple
-- **Framer Motion** : Animations fluides et professionnelles
-- **React Query** : Gestion des données côté client
-- **React Hook Form** : Formulaires performants et accessibles
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript 5.3+
+- **Styling**: Tailwind CSS 3.4
+- **State Management**: Zustand 4.4
+- **UI Components**: Headless UI, Radix UI
+- **Real-time**: Socket.io Client
+- **Charts**: Recharts
+- **Forms**: React Hook Form
+- **Animations**: Framer Motion
 
-### Backend & Services
-- **Node.js** : Runtime JavaScript côté serveur
-- **Express.js** : Framework web léger et flexible
-- **Socket.io** : Communication temps réel
-- **JWT** : Authentification sécurisée
-- **bcryptjs** : Hachage sécurisé des mots de passe
-- **Multer** : Gestion des uploads de fichiers
+### Backend
+- **Runtime**: Node.js 20 LTS
+- **Framework**: Express.js 4.18
+- **Language**: TypeScript 5.3
+- **Database**: PostgreSQL 15 with Prisma ORM
+- **Cache**: Redis 7.2
+- **Search**: Elasticsearch 8.11
+- **File Storage**: AWS S3 / MinIO
+- **Queue**: Bull (Redis-based)
+- **Real-time**: Socket.io
 
-### Base de Données & Stockage
-- **PostgreSQL** : Base de données relationnelle robuste
-- **Redis** : Cache et sessions en mémoire
-- **AWS S3** : Stockage cloud des fichiers
-- **CloudFront** : CDN pour les performances
+### AI & ML
+- **LLM**: OpenAI GPT-4
+- **Embeddings**: OpenAI Ada
+- **Voice**: OpenAI Whisper
+- **OCR**: Tesseract.js
+- **NLP**: Natural.js
 
-### Tests & Qualité
-- **Jest** : Framework de tests unitaires
-- **React Testing Library** : Tests d'intégration
-- **Cypress** : Tests end-to-end
-- **ESLint** : Linting du code
-- **Prettier** : Formatage automatique
-- **Husky** : Git hooks pour la qualité
+### DevOps
+- **Container**: Docker & Docker Compose
+- **CI/CD**: GitHub Actions
+- **Monitoring**: Prometheus & Grafana
+- **Logging**: Winston & ELK Stack
+- **Error Tracking**: Sentry
 
-### DevOps & Déploiement
-- **Docker** : Containerisation
-- **GitHub Actions** : CI/CD automatisé
-- **Vercel** : Déploiement frontend
-- **Railway** : Déploiement backend
-- **Sentry** : Monitoring d'erreurs
-- **Analytics** : Suivi des performances
+## 📁 Project Structure
 
-## 🚀 Installation et Démarrage
+```
+atlas-core-sid/
+├── src/                      # Frontend source code
+│   ├── app/                  # Next.js app directory
+│   ├── components/           # React components
+│   ├── hooks/               # Custom React hooks
+│   ├── lib/                 # Utility functions
+│   ├── store/               # State management
+│   ├── styles/              # Global styles
+│   └── types/               # TypeScript types
+├── backend/                  # Backend API
+│   ├── src/
+│   │   ├── controllers/     # Route controllers
+│   │   ├── services/        # Business logic
+│   │   ├── middleware/      # Express middleware
+│   │   ├── models/          # Data models
+│   │   ├── utils/           # Utilities
+│   │   └── database/        # Database config
+│   ├── prisma/              # Database schema
+│   ├── tests/               # Backend tests
+│   └── Dockerfile           # Backend container
+├── public/                   # Static assets
+├── scripts/                  # Utility scripts
+├── .github/                  # GitHub Actions
+├── docker-compose.yml        # Docker services
+├── Dockerfile               # Frontend container
+└── README.md                # This file
+```
 
-### Prérequis
-- Node.js 18+
-- npm ou yarn
-- PostgreSQL (optionnel pour le développement)
+## 🚀 Quick Start
 
-### Installation rapide
+### Prerequisites
 
+- Node.js 20+ and npm 10+
+- Docker and Docker Compose
+- Git
+
+### 🐳 Using Docker (Recommended)
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/atlas-core-sid.git
+   cd atlas-core-sid
+   ```
+
+2. **Run the setup script**
+   ```bash
+   ./scripts/start-dev.sh
+   ```
+
+   This will:
+   - Check prerequisites
+   - Create necessary directories
+   - Set up environment files
+   - Start all services
+   - Run database migrations
+   - Configure storage
+
+3. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:3001
+   - API Documentation: http://localhost:3001/api-docs
+
+### 💻 Manual Setup
+
+1. **Install dependencies**
+   ```bash
+   # Frontend
+   npm install
+
+   # Backend
+   cd backend
+   npm install
+   ```
+
+2. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   cp backend/.env.example backend/.env
+   ```
+
+3. **Start services**
+   ```bash
+   # Start infrastructure (PostgreSQL, Redis, etc.)
+   docker-compose up -d postgres redis elasticsearch minio
+
+   # Run database migrations
+   cd backend
+   npx prisma migrate deploy
+
+   # Start backend
+   npm run dev
+
+   # Start frontend (in another terminal)
+   cd ..
+   npm run dev
+   ```
+
+## 🧪 Testing
+
+### Run all tests
 ```bash
-# Cloner le repository
-git clone https://github.com/AtlasCoreUs/Sid.git
-cd Sid
-
-# Installer les dépendances
-npm install
-
-# Configuration de l'environnement
-cp .env.example .env.local
-# Éditer .env.local avec vos variables
-
-# Lancer en mode développement
-npm run dev
+npm run test
 ```
 
-L'application sera accessible sur `http://localhost:3000`
-
-### Scripts disponibles
-
+### Run specific test suites
 ```bash
-# Développement
-npm run dev              # Serveur de développement
-npm run build            # Build de production
-npm run start            # Serveur de production
-npm run export           # Export statique
+# Unit tests
+npm run test:unit
 
-# Tests
-npm run test             # Tests unitaires
-npm run test:watch       # Tests en mode watch
-npm run test:coverage    # Couverture de tests
+# Integration tests
+npm run test:integration
 
-# Qualité de code
-npm run lint             # Vérification ESLint
-npm run lint:fix         # Correction automatique
-npm run type-check       # Vérification TypeScript
+# E2E tests
+npm run test:e2e
 
-# PWA
-npm run pwa:generate     # Génération du service worker
-
-# Analyse
-npm run analyze          # Analyse du bundle
+# Test coverage
+npm run test:coverage
 ```
 
-## 🎮 Guide d'Utilisation
+## 📦 Building for Production
 
-### Première utilisation
+### Using Docker
+```bash
+# Build images
+docker-compose build
 
-1. **Ouvrir la sidebar** : Survolez la barre latérale gauche (📝)
-2. **Créer une note** : Cliquez sur ➕ ou utilisez `Ctrl+N`
-3. **Écrire du contenu** : L'auto-sauvegarde se charge du reste !
-4. **Utiliser l'IA** : Cliquez sur 🤖 pour analyser vos notes
-5. **Collaborer** : Invitez des membres avec 🤝
-6. **Visualiser** : Explorez vos connaissances avec 🧠
-
-### Fonctionnalités avancées
-
-#### Assistant IA
-- **Analyse automatique** : L'IA analyse chaque note pour extraire des insights
-- **Génération de contenu** : Créez du contenu basé sur vos prompts
-- **Suggestions intelligentes** : Améliorez vos notes avec des recommandations
-- **Sentiment analysis** : Comprenez le ton de vos écrits
-
-#### Collaboration
-- **Commentaires** : Ajoutez des commentaires et réponses
-- **Partage sécurisé** : Générez des liens avec permissions
-- **Gestion d'équipe** : Invitez et gérez les collaborateurs
-- **Activité en temps réel** : Suivez les modifications
-
-#### Graphe de Connaissances
-- **Visualisation** : Explorez vos notes sous forme de graphe
-- **Navigation** : Zoom, pan et filtres interactifs
-- **Liens automatiques** : Découvrez les connexions entre concepts
-- **Export** : Sauvegardez vos visualisations
-
-## 🏗 Architecture Technique
-
-### Structure du projet
-```
-src/
-├── components/           # Composants React
-│   ├── AIAssistant.tsx  # Assistant IA révolutionnaire
-│   ├── CollaborationHub.tsx # Hub de collaboration
-│   ├── KnowledgeGraph.tsx   # Graphe de connaissances
-│   ├── NotesManager.tsx     # Gestionnaire de notes
-│   └── ...                 # Autres composants
-├── pages/               # Pages Next.js
-├── store/               # Gestion d'état Zustand
-├── types/               # Types TypeScript
-├── utils/               # Utilitaires
-├── styles/              # Styles CSS
-└── tests/               # Tests automatisés
+# Run production stack
+docker-compose -f docker-compose.prod.yml up
 ```
 
-### Fonctionnalités techniques
+### Manual build
+```bash
+# Build frontend
+npm run build
 
-#### Gestion d'état avancée
-```typescript
-// Store Zustand avec persistance et immer
-export const useAppStore = create<AppState>()(
-  immer(
-    persist(
-      (set, get) => ({
-        // État et actions
-      }),
-      { name: 'sid-hud-store' }
-    )
-  )
-);
+# Build backend
+cd backend
+npm run build
 ```
 
-#### Assistant IA
-```typescript
-// Analyse automatique des notes
-const analyzeNote = async (note: Note): Promise<AIAnalysis> => {
-  const sentiment = detectSentiment(note.content);
-  const keywords = extractKeywords(note.content);
-  const complexity = calculateComplexity(note.content);
-  
-  return {
-    sentiment,
-    keywords,
-    complexity,
-    suggestions: generateSuggestions(note),
-    readingTime: calculateReadingTime(note.content)
-  };
-};
+## 🚀 Deployment
+
+### Environment Variables
+
+Create production environment files with the following variables:
+
+#### Frontend (.env.production)
+```env
+NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+NEXT_PUBLIC_WS_URL=wss://api.yourdomain.com
 ```
 
-#### Graphe de Connaissances
-```typescript
-// Génération automatique des liens
-const generateConnections = (notes: Note[]): GraphConnection[] => {
-  return notes.flatMap((note, index) => {
-    const connections: GraphConnection[] = [];
-    
-    // Liens basés sur les tags
-    notes.slice(index + 1).forEach(otherNote => {
-      const commonTags = note.tags.filter(tag => otherNote.tags.includes(tag));
-      if (commonTags.length > 0) {
-        connections.push({
-          source: note.id,
-          target: otherNote.id,
-          strength: commonTags.length * 0.5,
-          type: 'bidirectional'
-        });
-      }
-    });
-    
-    return connections;
-  });
-};
+#### Backend (backend/.env.production)
+```env
+NODE_ENV=production
+PORT=3001
+DATABASE_URL=postgresql://user:pass@host:5432/atlas_core_sid
+REDIS_URL=redis://user:pass@host:6379
+JWT_SECRET=your-secure-jwt-secret
+# ... other production configs
 ```
 
-## 📊 Comparaison avec la Concurrence
+### Deployment Options
 
-| Fonctionnalité | SID HUD | Notion | Obsidian |
-|----------------|---------|--------|----------|
-| **Assistant IA** | ✅ Avancé | ❌ Basique | ❌ |
-| **Collaboration** | ✅ Enterprise | ✅ Bon | ❌ |
-| **Graphe de Connaissances** | ✅ Interactif | ❌ | ✅ Basique |
-| **PWA** | ✅ Complet | ❌ | ❌ |
-| **TypeScript Strict** | ✅ | ❌ | ❌ |
-| **Tests Automatisés** | ✅ Complet | ❌ | ❌ |
-| **Performance** | ⚡ Ultra-rapide | 🐌 Lente | 🐌 Lente |
-| **Prix** | 💰 Gratuit | 💰 Payant | 💰 Payant |
+1. **Docker Swarm / Kubernetes**
+   - Use provided Docker images
+   - Scale horizontally as needed
 
-## 🎯 Avantages Concurrentiels
+2. **Cloud Platforms**
+   - AWS ECS/EKS
+   - Google Cloud Run/GKE
+   - Azure Container Instances/AKS
 
-### 🚀 Performance
-- **Chargement ultra-rapide** : < 1 seconde
-- **Interface fluide** : 60 FPS constant
-- **Optimisations avancées** : Code splitting, lazy loading
-- **PWA natif** : Fonctionne hors ligne
+3. **Traditional VPS**
+   - Use PM2 for process management
+   - Nginx as reverse proxy
 
-### 🧠 Intelligence Artificielle
-- **Analyse contextuelle** : Compréhension du contenu
-- **Génération intelligente** : Création de contenu pertinent
-- **Suggestions personnalisées** : Amélioration continue
-- **Sentiment analysis** : Compréhension émotionnelle
+## 📊 Monitoring & Maintenance
 
-### 🤝 Collaboration Enterprise
-- **Temps réel** : Synchronisation instantanée
-- **Permissions granulaires** : Contrôle fin des accès
-- **Workflow d'approbation** : Processus configurable
-- **Audit trail** : Traçabilité complète
+### Health Checks
+- Frontend: `GET /api/health`
+- Backend: `GET /health`
 
-### 🎨 Expérience Utilisateur
-- **Design moderne** : Interface intuitive et belle
-- **Accessibilité** : Conformité WCAG 2.1 AA
-- **Responsive** : Optimisé pour tous les appareils
-- **Personnalisation** : Thèmes et préférences
+### Logs
+- Application logs: `./logs/app.log`
+- Error logs: `./logs/error.log`
+- Access logs: Nginx/reverse proxy
 
-## 🔮 Roadmap Future
+### Backups
+- Database: Daily automated backups
+- File storage: S3 versioning enabled
+- Redis: AOF persistence
 
-### Version 2.1 (Q1 2024)
-- [ ] **IA conversationnelle** : Chat avec l'assistant IA
-- [ ] **Templates avancés** : Création de modèles personnalisés
-- [ ] **Intégrations** : Slack, Teams, Discord
-- [ ] **API publique** : Développement d'extensions
+## 🤝 Contributing
 
-### Version 2.2 (Q2 2024)
-- [ ] **Reconnaissance vocale** : Dictée automatique
-- [ ] **OCR avancé** : Extraction de texte des images
-- [ ] **Traduction automatique** : Support multi-langues
-- [ ] **Synchronisation cloud** : Backup automatique
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-### Version 3.0 (Q3 2024)
-- [ ] **IA générative** : Création de contenu avancée
-- [ ] **Réalité augmentée** : Visualisation 3D
-- [ ] **Collaboration VR** : Espaces de travail virtuels
-- [ ] **Blockchain** : Décentralisation et sécurité
+### Development Workflow
 
-## 🤝 Contribution
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Les contributions sont les bienvenues ! Voici comment participer :
+### Code Style
 
-1. **Fork** le projet
-2. **Créez** une branche feature (`git checkout -b feature/AmazingFeature`)
-3. **Commitez** vos changements (`git commit -m 'Add AmazingFeature'`)
-4. **Push** vers la branche (`git push origin feature/AmazingFeature`)
-5. **Ouvrez** une Pull Request
+- Follow TypeScript best practices
+- Use ESLint and Prettier configurations
+- Write tests for new features
+- Update documentation as needed
 
-### Standards de code
-- **TypeScript Strict** : Types stricts requis
-- **ESLint** : Configuration enterprise
-- **Prettier** : Formatage automatique
-- **Tests** : Couverture minimale 80%
-- **Commits** : Convention Conventional Commits
+## 📄 License
 
-## 📝 Licence
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Distribué sous licence MIT. Voir `LICENSE` pour plus d'informations.
+## 🙏 Acknowledgments
 
-## 🙏 Remerciements
+- OpenAI for GPT-4 and Whisper APIs
+- Vercel for Next.js framework
+- All open-source contributors
 
-- **Next.js** team pour le framework révolutionnaire
-- **React** team pour la bibliothèque
-- **Zustand** pour la gestion d'état simple
-- **Framer Motion** pour les animations
-- **Communauté open source** pour l'inspiration
+## 📞 Support
+
+- 📧 Email: support@atlascoresid.com
+- 💬 Discord: [Join our community](https://discord.gg/atlascoresid)
+- 📚 Documentation: [docs.atlascoresid.com](https://docs.atlascoresid.com)
+- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/atlas-core-sid/issues)
 
 ---
 
 <div align="center">
-
-**[🌟 Star ce projet](https://github.com/AtlasCoreUs/Sid)** si vous l'avez trouvé utile !
-
-Développé avec ❤️ pour une prise de notes révolutionnaire
-
-**SID HUD - Au-delà de Notion et Obsidian**
-
+  Made with ❤️ by the Atlas Core SID Team
 </div>

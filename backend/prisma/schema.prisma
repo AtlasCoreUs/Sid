@@ -1,0 +1,486 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id                String           @id @default(uuid())
+  email             String           @unique
+  username          String           @unique
+  password          String
+  firstName         String?
+  lastName          String?
+  avatar            String?
+  isActive          Boolean          @default(true)
+  isEmailVerified   Boolean          @default(false)
+  emailVerifiedAt   DateTime?
+  lastLoginAt       DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  profile           UserProfile?
+  settings          UserSettings?
+  subscription      Subscription?
+  notes             Note[]
+  folders           Folder[]
+  tags              Tag[]
+  attachments       Attachment[]
+  aiUsage           AIUsage[]
+  collaborations    Collaboration[]
+  sharedNotes       SharedNote[]
+  activities        Activity[]
+  notifications     Notification[]
+  sessions          Session[]
+  
+  @@index([email])
+  @@index([username])
+}
+
+model UserProfile {
+  id                String           @id @default(uuid())
+  userId            String           @unique
+  bio               String?
+  location          String?
+  timezone          String           @default("UTC")
+  language          String           @default("en")
+  phoneNumber       String?
+  dateOfBirth       DateTime?
+  occupation        String?
+  company           String?
+  website           String?
+  socialLinks       Json?            // { twitter: "", linkedin: "", github: "" }
+  preferences       Json?            // User preferences as JSON
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserSettings {
+  id                String           @id @default(uuid())
+  userId            String           @unique
+  theme             Theme            @default(LIGHT)
+  notificationsEnabled Boolean       @default(true)
+  emailNotifications Boolean         @default(true)
+  pushNotifications Boolean          @default(true)
+  smsNotifications  Boolean          @default(false)
+  autoSave          Boolean          @default(true)
+  autoSaveInterval  Int              @default(30) // seconds
+  defaultNotePrivacy Privacy         @default(PRIVATE)
+  aiAssistEnabled   Boolean          @default(true)
+  voiceEnabled      Boolean          @default(true)
+  handwritingEnabled Boolean         @default(true)
+  offlineEnabled    Boolean          @default(true)
+  twoFactorEnabled  Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Note Management
+model Note {
+  id                String           @id @default(uuid())
+  userId            String
+  folderId          String?
+  title             String
+  content           String           @db.Text
+  contentHtml       String?          @db.Text
+  contentMarkdown   String?          @db.Text
+  excerpt           String?
+  coverImage        String?
+  icon              String?
+  color             String?
+  isPinned          Boolean          @default(false)
+  isArchived        Boolean          @default(false)
+  isDeleted         Boolean          @default(false)
+  deletedAt         DateTime?
+  privacy           Privacy          @default(PRIVATE)
+  password          String?          // For password-protected notes
+  viewCount         Int              @default(0)
+  wordCount         Int              @default(0)
+  readingTime       Int              @default(0) // in minutes
+  lastEditedAt      DateTime         @default(now())
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder            Folder?          @relation(fields: [folderId], references: [id])
+  tags              NoteTag[]
+  attachments       Attachment[]
+  versions          NoteVersion[]
+  shares            SharedNote[]
+  collaborations    Collaboration[]
+  activities        Activity[]
+  aiAnalyses        AIAnalysis[]
+  
+  @@index([userId])
+  @@index([folderId])
+  @@index([isDeleted])
+  @@index([privacy])
+  @@fulltext([title, content])
+}
+
+model NoteVersion {
+  id                String           @id @default(uuid())
+  noteId            String
+  content           String           @db.Text
+  title             String
+  versionNumber     Int
+  changedBy         String
+  changesSummary    String?
+  createdAt         DateTime         @default(now())
+  
+  note              Note             @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  
+  @@unique([noteId, versionNumber])
+  @@index([noteId])
+}
+
+model Folder {
+  id                String           @id @default(uuid())
+  userId            String
+  parentId          String?
+  name              String
+  description       String?
+  icon              String?
+  color             String?
+  order             Int              @default(0)
+  isDefault         Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent            Folder?          @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children          Folder[]         @relation("FolderHierarchy")
+  notes             Note[]
+  
+  @@index([userId])
+  @@index([parentId])
+}
+
+model Tag {
+  id                String           @id @default(uuid())
+  userId            String
+  name              String
+  color             String?
+  description       String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes             NoteTag[]
+  
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model NoteTag {
+  noteId            String
+  tagId             String
+  createdAt         DateTime         @default(now())
+  
+  note              Note             @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  tag               Tag              @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@id([noteId, tagId])
+}
+
+// File Management
+model Attachment {
+  id                String           @id @default(uuid())
+  userId            String
+  noteId            String?
+  filename          String
+  originalName      String
+  mimeType          String
+  size              Int              // in bytes
+  url               String
+  thumbnailUrl      String?
+  metadata          Json?            // { width, height, duration, etc. }
+  uploadStatus      UploadStatus     @default(PENDING)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  // Relations
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  note              Note?            @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([noteId])
+}
+
+// AI Features
+model AIUsage {
+  id                String           @id @default(uuid())
+  userId            String
+  feature           AIFeature
+  tokens            Int
+  cost              Float
+  model             String
+  requestData       Json
+  responseData      Json
+  duration          Int              // in milliseconds
+  status            AIStatus
+  error             String?
+  createdAt         DateTime         @default(now())
+  
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([feature])
+  @@index([createdAt])
+}
+
+model AIAnalysis {
+  id                String           @id @default(uuid())
+  noteId            String
+  type              AnalysisType
+  result            Json
+  confidence        Float?
+  processingTime    Int              // in milliseconds
+  createdAt         DateTime         @default(now())
+  
+  note              Note             @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  
+  @@index([noteId])
+  @@index([type])
+}
+
+// Collaboration
+model Collaboration {
+  id                String           @id @default(uuid())
+  noteId            String
+  userId            String
+  permission        Permission       @default(VIEW)
+  acceptedAt        DateTime?
+  lastAccessedAt    DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  note              Note             @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([noteId, userId])
+  @@index([noteId])
+  @@index([userId])
+}
+
+model SharedNote {
+  id                String           @id @default(uuid())
+  noteId            String
+  userId            String
+  shareCode         String           @unique
+  permission        Permission       @default(VIEW)
+  expiresAt         DateTime?
+  password          String?
+  maxViews          Int?
+  currentViews      Int              @default(0)
+  isActive          Boolean          @default(true)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  note              Note             @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([shareCode])
+  @@index([noteId])
+}
+
+// Activity Tracking
+model Activity {
+  id                String           @id @default(uuid())
+  userId            String
+  noteId            String?
+  action            ActivityAction
+  details           Json?
+  ipAddress         String?
+  userAgent         String?
+  createdAt         DateTime         @default(now())
+  
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  note              Note?            @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([noteId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// Notifications
+model Notification {
+  id                String           @id @default(uuid())
+  userId            String
+  type              NotificationType
+  title             String
+  message           String
+  data              Json?
+  isRead            Boolean          @default(false)
+  readAt            DateTime?
+  createdAt         DateTime         @default(now())
+  
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// Subscription Management
+model Subscription {
+  id                String           @id @default(uuid())
+  userId            String           @unique
+  plan              SubscriptionPlan
+  status            SubscriptionStatus
+  stripeCustomerId  String?          @unique
+  stripeSubscriptionId String?       @unique
+  currentPeriodStart DateTime
+  currentPeriodEnd  DateTime
+  cancelAtPeriodEnd Boolean          @default(false)
+  trialEndsAt       DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([status])
+}
+
+// Session Management
+model Session {
+  id                String           @id @default(uuid())
+  userId            String
+  token             String           @unique
+  refreshToken      String           @unique
+  deviceInfo        Json?
+  ipAddress         String?
+  expiresAt         DateTime
+  lastActivityAt    DateTime         @default(now())
+  createdAt         DateTime         @default(now())
+  
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Enums
+enum Theme {
+  LIGHT
+  DARK
+  AUTO
+}
+
+enum Privacy {
+  PRIVATE
+  PUBLIC
+  UNLISTED
+  PASSWORD
+}
+
+enum UploadStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum AIFeature {
+  TEXT_ANALYSIS
+  SUMMARIZATION
+  TRANSLATION
+  GRAMMAR_CHECK
+  SENTIMENT_ANALYSIS
+  KEYWORD_EXTRACTION
+  VOICE_TRANSCRIPTION
+  HANDWRITING_OCR
+  CONTENT_GENERATION
+  SMART_SEARCH
+}
+
+enum AIStatus {
+  SUCCESS
+  FAILED
+  TIMEOUT
+  RATE_LIMITED
+}
+
+enum AnalysisType {
+  SUMMARY
+  KEYWORDS
+  SENTIMENT
+  ENTITIES
+  CATEGORIES
+  LANGUAGE
+  READABILITY
+}
+
+enum Permission {
+  VIEW
+  COMMENT
+  EDIT
+  ADMIN
+}
+
+enum ActivityAction {
+  NOTE_CREATED
+  NOTE_UPDATED
+  NOTE_DELETED
+  NOTE_SHARED
+  NOTE_VIEWED
+  NOTE_EXPORTED
+  FOLDER_CREATED
+  FOLDER_UPDATED
+  FOLDER_DELETED
+  TAG_CREATED
+  TAG_UPDATED
+  TAG_DELETED
+  FILE_UPLOADED
+  FILE_DELETED
+  COLLABORATION_ADDED
+  COLLABORATION_REMOVED
+  LOGIN
+  LOGOUT
+  SETTINGS_UPDATED
+  SUBSCRIPTION_CHANGED
+}
+
+enum NotificationType {
+  COLLABORATION_INVITE
+  NOTE_SHARED
+  NOTE_COMMENTED
+  NOTE_MENTIONED
+  SUBSCRIPTION_EXPIRING
+  SUBSCRIPTION_RENEWED
+  STORAGE_WARNING
+  SECURITY_ALERT
+  SYSTEM_UPDATE
+}
+
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  PAUSED
+  TRIALING
+}
