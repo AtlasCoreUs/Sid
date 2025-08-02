@@ -20,6 +20,9 @@ model User {
   role            Role      @default(USER)
   emailVerified   Boolean   @default(false)
   stripeCustomerId String?  @unique
+  referralCode    String?   @unique
+  referredBy      String?
+  referralStats   Json?     // { totalReferrals, activeReferrals, earnings, lastClaimDate }
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   
@@ -30,8 +33,13 @@ model User {
   notifications   Notification[]
   subscription    Subscription?
   payments        Payment[]
+  webhooks        Webhook[]
+  referrer        User?     @relation("Referrals", fields: [referredBy], references: [id])
+  referrals       User[]    @relation("Referrals")
   
   @@index([email])
+  @@index([referralCode])
+  @@index([referredBy])
 }
 
 // App Model
@@ -276,4 +284,39 @@ model Payment {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
+}
+
+// Webhook Model
+model Webhook {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  url       String
+  events    String[]
+  active    Boolean  @default(true)
+  headers   Json?
+  secret    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs WebhookLog[]
+
+  @@index([userId])
+}
+
+// Webhook Log Model
+model WebhookLog {
+  id        String   @id @default(cuid())
+  webhookId String
+  event     String
+  status    Int
+  response  String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
 }

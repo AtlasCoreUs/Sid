@@ -12,6 +12,10 @@ const nextConfig = {
   experimental: {
     appDir: true,
     serverActions: true,
+    optimizeCss: true,
+    optimizeImages: true,
+    scrollRestoration: true,
+    webVitalsAttribution: ['CLS', 'LCP', 'FCP', 'FID', 'TTFB'],
   },
   images: {
     domains: ['localhost', 'api.sid-hud.com'],
