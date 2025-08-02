@@ -2,22 +2,27 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/Providers'
+import FloatingSidebar from '@/components/notes/FloatingSidebar'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'SID HUD - Business Card 2.0',
-  description: 'Créez votre app personnalisée en quelques minutes. La révolution des cartes de visite digitales.',
-  keywords: ['app generator', 'business card', 'AI', 'PWA', 'digital transformation'],
-  authors: [{ name: 'Atlas Core' }],
+  title: 'SID HUD - Créez votre app en 15 minutes',
+  description: 'Générateur d\'applications professionnelles avec IA. Transformez votre business en app moderne.',
+  keywords: 'app generator, no-code, AI, business app, mobile app, PWA',
+  authors: [{ name: 'SID HUD Team' }],
   openGraph: {
-    title: 'SID HUD - Votre Business Card du 21e Siècle',
-    description: 'Stop les cartes, créez VOTRE app',
+    title: 'SID HUD - La révolution des apps professionnelles',
+    description: 'Créez votre app en 15 minutes. Sans coder. Avec l\'IA.',
+    images: ['/og-image.png'],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SID HUD - Créez votre app en 15 minutes',
+    description: 'Le générateur d\'apps qui révolutionne le business',
     images: ['/og-image.png'],
   },
-  manifest: '/manifest.json',
-  themeColor: '#000000',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
 }
 
 export default function RootLayout({
@@ -30,6 +35,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           {children}
+          <FloatingSidebar />
         </Providers>
       </body>
     </html>
