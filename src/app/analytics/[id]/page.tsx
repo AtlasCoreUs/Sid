@@ -224,7 +224,7 @@ export default function AnalyticsPage() {
             title="Durée moyenne"
             value={`${Math.floor(analytics.overview.avgSessionTime / 60)}m`}
             icon={<Clock className="w-4 h-4" />}
-            color="info"
+            color="primary"
             change={-5}
           />
           <StatsWidget

@@ -434,7 +434,7 @@ export default function FloatingSidebar() {
             {/* Header avec fermeture */}
             <div className="p-6 border-b border-white/10 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <mainTools[selectedTool].icon className="w-5 h-5" />
+                {React.createElement(mainTools[selectedTool].icon, { className: "w-5 h-5" })}
                 {mainTools[selectedTool].name}
               </h2>
               <button

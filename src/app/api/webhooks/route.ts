@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import crypto from 'crypto'
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Fonction utilitaire pour déclencher des webhooks
-export async function triggerWebhooks(event: string, data: any, userId: string) {
+async function triggerWebhooks(event: string, data: any, userId: string) {
   try {
     // Récupérer les webhooks actifs pour cet événement
     const webhooks = await prisma.webhook.findMany({
