@@ -1,0 +1,10 @@
+{
+  "name": "PACK ROI TOTAL",
+  "version": "1.0.0",
+  "modules": [
+    "Hero",
+    "AnimatedStats",
+    "ModulesSelector",
+    "TechStack"
+  ]
+}
