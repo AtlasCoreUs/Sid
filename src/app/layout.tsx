@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/Providers'
 import FloatingSidebar from '@/components/notes/FloatingSidebar'
+import Analytics from '@/components/Analytics'
+import { cn } from '@/lib/utils'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -32,11 +34,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={cn('min-h-screen bg-background font-sans antialiased')}>
         <Providers>
           {children}
           <FloatingSidebar />
         </Providers>
+        <Analytics />
       </body>
     </html>
   )
