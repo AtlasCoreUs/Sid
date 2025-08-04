@@ -13,7 +13,7 @@ import {
   Brain,
   Palette,
   Users,
-  ChartBar,
+  BarChart3,
   MessageSquare,
   Layers
 } from 'lucide-react'
@@ -69,7 +69,7 @@ const features = [
     gradient: "from-pink-500/20 to-pink-500/5"
   },
   {
-    icon: ChartBar,
+    icon: BarChart3,
     title: "Analytics Intégrés",
     description: "Suivez vos visiteurs, conversions, et performances en temps réel.",
     color: "text-yellow-500",

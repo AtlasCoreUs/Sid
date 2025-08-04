@@ -103,8 +103,8 @@ export default function ShareButton({
     window.open(shareUrl, '_blank', 'width=600,height=400')
     
     // Track l'événement
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'share', {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'share', {
         method: platform,
         content_type: 'app',
         item_id: url,

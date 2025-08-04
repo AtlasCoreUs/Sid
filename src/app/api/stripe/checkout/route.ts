@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Stripe from 'stripe'
 
@@ -144,9 +144,9 @@ export async function GET(request: NextRequest) {
     // Retourner les détails de l'abonnement
     return NextResponse.json({
       plan: user.subscription.plan,
-      status: user.subscription.status,
+      status: user.subscription.stripeStatus,
       currentPeriodEnd: user.subscription.currentPeriodEnd,
-      cancelAtPeriodEnd: user.subscription.cancelAtPeriodEnd,
+      cancelAtPeriodEnd: false,
       features: getPlanFeatures(user.subscription.plan),
     })
   } catch (error) {

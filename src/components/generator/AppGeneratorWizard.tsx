@@ -63,9 +63,11 @@ const AppGeneratorWizard: React.FC = () => {
       <AIChatAssistant 
         context={{
           step: getStepName(),
-          businessInfo: generatorData.businessInfo,
-          template: generatorData.template,
-          features: generatorData.features,
+          data: {
+            businessInfo: generatorData.businessInfo,
+            template: generatorData.template,
+            features: generatorData.features,
+          }
         }}
         onSuggestion={handleAISuggestion}
       />

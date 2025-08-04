@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import crypto from 'crypto'
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         subscription: {
           select: {
             plan: true,
-            status: true,
+            stripeStatus: true,
           },
         },
       },
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       referralLink: `${process.env.NEXT_PUBLIC_APP_URL}/auth/signup?ref=${user.referralCode}`,
       stats: user.referralStats || {
         totalReferrals: referrals.length,
-        activeReferrals: referrals.filter(r => r.subscription?.status === 'active').length,
+        activeReferrals: referrals.filter(r => r.subscription?.stripeStatus === 'active').length,
         earnings: 0,
       },
       referrals,
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
     await prisma.notification.create({
       data: {
         userId: session.user.id,
-        type: 'REFERRAL_SENT',
+        type: 'INFO',
         title: 'Invitation envoyée',
         message: `Invitation de parrainage envoyée à ${email}`,
         data: { email },
@@ -186,12 +186,15 @@ export async function PUT(request: NextRequest) {
     // Vérifier les conditions pour réclamer
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: {
+      select: {
+        id: true,
         referralStats: true,
+        referralCode: true,
       },
     })
 
-    if (!user?.referralStats || user.referralStats.activeReferrals < 3) {
+    const stats = user?.referralStats as any
+    if (!stats || stats.activeReferrals < 3) {
       return NextResponse.json(
         { error: 'Conditions non remplies (3 parrainages actifs minimum)' },
         { status: 400 }

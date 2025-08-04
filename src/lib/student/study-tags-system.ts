@@ -463,7 +463,7 @@ export class StudyTagsAI {
       'mtn': ['maintenant'],
       'auj': ["aujourd'hui"],
       'hier': ['hier'],
-      'dem': ['demain'],
+      'demain': ['demain'],
       'fct': ['fonction'],
       'var': ['variable'],
       'const': ['constante'],
@@ -507,7 +507,7 @@ export class StudyTagsAI {
       'lang': ['langue', 'langage'],
       'fr': ['français'],
       'eng': ['anglais'],
-      'esp': ['espagnol'],
+      'espagnol': ['espagnol'],
       'all': ['allemand'],
       'it': ['italien']
     }

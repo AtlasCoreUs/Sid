@@ -121,7 +121,7 @@ export default function VoiceRecorder({
   }
 
   const detectVoiceCommands = (text: string): Array<{command: string, match: string}> => {
-    const commands = []
+    const commands: Array<{command: string, match: string}> = []
     
     // Commandes de ponctuation
     const punctuationCommands = {
