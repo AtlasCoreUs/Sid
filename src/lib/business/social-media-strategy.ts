@@ -1,5 +1,36 @@
 // 📱 STRATÉGIE RÉSEAUX SOCIAUX & BUSINESS PLAN INTÉGRÉ
 
+export interface ContentPlan {
+  date: string
+  platform: string
+  content: string
+  type: string
+}
+
+export interface Automation {
+  name: string
+  trigger: string
+  action: string
+}
+
+export interface AnalyticsTracking {
+  metric: string
+  target: number
+  platform: string
+}
+
+export interface Schedule {
+  frequency: string
+  times: string[]
+  days: string[]
+}
+
+export interface ContentTemplate {
+  name: string
+  template: string
+  variables: string[]
+}
+
 export interface SocialMediaStrategy {
   platforms: Platform[]
   contentCalendar: ContentPlan[]

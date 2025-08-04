@@ -258,13 +258,17 @@ const StepCustomization: React.FC = () => {
               size="sm"
               icon={<Smartphone className="w-4 h-4" />}
               onClick={() => setPreviewDevice('mobile')}
-            />
+            >
+              Mobile
+            </GlassButton>
             <GlassButton
               variant={previewDevice === 'desktop' ? 'primary' : 'ghost'}
               size="sm"
               icon={<Monitor className="w-4 h-4" />}
               onClick={() => setPreviewDevice('desktop')}
-            />
+            >
+              Desktop
+            </GlassButton>
           </div>
         </div>
 

@@ -94,21 +94,17 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     where: { userId },
     create: {
       userId,
-      stripeSubscriptionId: subscription.id,
       stripePriceId: subscription.items.data[0].price.id,
       stripeCustomerId: subscription.customer as string,
       plan: planId as any,
-      status: subscription.status === 'active' ? 'ACTIVE' : 'INACTIVE',
+      stripeStatus: subscription.status,
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
     update: {
-      stripeSubscriptionId: subscription.id,
       stripePriceId: subscription.items.data[0].price.id,
       plan: planId as any,
-      status: subscription.status === 'active' ? 'ACTIVE' : 'INACTIVE',
+      stripeStatus: subscription.status,
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
   })
 
@@ -136,9 +132,8 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   await prisma.subscription.update({
     where: { userId },
     data: {
-      status: subscription.status === 'active' ? 'ACTIVE' : 'INACTIVE',
+      stripeStatus: subscription.status,
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
   })
 }
@@ -155,8 +150,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   await prisma.subscription.update({
     where: { userId },
     data: {
-      status: 'CANCELLED',
-      cancelledAt: new Date(),
+      stripeStatus: 'cancelled',
     },
   })
 

@@ -72,10 +72,6 @@ export function useSubscription() {
 
     toast.error(message, {
       duration: 5000,
-      action: {
-        label: 'Upgrade',
-        onClick: () => window.location.href = '/pricing',
-      },
     })
   }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import crypto from 'crypto'
@@ -112,79 +112,6 @@ export async function POST(request: NextRequest) {
       { error: 'Erreur serveur' },
       { status: 500 }
     )
-  }
-}
-
-// Fonction utilitaire pour déclencher des webhooks
-export async function triggerWebhooks(event: string, data: any, userId: string) {
-  try {
-    // Récupérer les webhooks actifs pour cet événement
-    const webhooks = await prisma.webhook.findMany({
-      where: {
-        userId,
-        active: true,
-        events: {
-          has: event,
-        },
-      },
-    })
-
-    // Envoyer les webhooks en parallèle
-    const promises = webhooks.map(async (webhook) => {
-      const payload = {
-        id: crypto.randomUUID(),
-        event,
-        created: new Date().toISOString(),
-        data,
-      }
-
-      // Signer le payload
-      const signature = crypto
-        .createHmac('sha256', webhook.secret)
-        .update(JSON.stringify(payload))
-        .digest('hex')
-
-      try {
-        const response = await fetch(webhook.url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-SID-Signature': signature,
-            'X-SID-Event': event,
-            ...webhook.headers,
-          },
-          body: JSON.stringify(payload),
-        })
-
-        // Logger le résultat
-        await prisma.webhookLog.create({
-          data: {
-            webhookId: webhook.id,
-            event,
-            status: response.status,
-            response: response.ok ? 'success' : await response.text(),
-          },
-        })
-
-        if (!response.ok) {
-          console.error(`Webhook failed: ${webhook.url} - ${response.status}`)
-        }
-      } catch (error) {
-        // Logger l'erreur
-        await prisma.webhookLog.create({
-          data: {
-            webhookId: webhook.id,
-            event,
-            status: 0,
-            response: error instanceof Error ? error.message : 'Network error',
-          },
-        })
-      }
-    })
-
-    await Promise.allSettled(promises)
-  } catch (error) {
-    console.error('Erreur trigger webhooks:', error)
   }
 }
 

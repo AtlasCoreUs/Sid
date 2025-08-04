@@ -321,7 +321,7 @@ export default function PricingPage() {
                     <motion.div
                       className="h-5 w-5 rounded-full border-2 border-white border-t-transparent"
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      transition={{ duration: 1, repeat: 999999 }}
                     />
                   ) : (
                     plan.id === 'free' ? 'Commencer gratuitement' : 'Choisir ce plan'

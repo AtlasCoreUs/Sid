@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import OpenAI from 'openai'
 import { z } from 'zod'
@@ -119,7 +119,6 @@ export async function POST(request: NextRequest) {
       updatedConversation = await prisma.aIConversation.create({
         data: {
           userId: session.user.id,
-          title: message.slice(0, 50) + '...',
           messages: [...messages, { role: 'assistant', content: aiResponse }],
         },
       })
@@ -164,7 +163,6 @@ export async function GET(request: NextRequest) {
       take: 10,
       select: {
         id: true,
-        title: true,
         createdAt: true,
       },
     })

@@ -230,7 +230,7 @@ const StepReview: React.FC = () => {
                 {generatorData.features?.length || 0} fonctionnalités actives
               </p>
               <div className="flex flex-wrap gap-2">
-                {generatorData.features?.slice(0, 5).map((feature) => (
+                {generatorData.features?.slice(0, 5).map((feature: any) => (
                   <span 
                     key={feature}
                     className="text-xs px-2 py-1 rounded-full bg-white/10"

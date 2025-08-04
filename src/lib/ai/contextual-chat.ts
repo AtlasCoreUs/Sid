@@ -357,7 +357,7 @@ export class DynamicResponseGenerator {
     // Détecter le type de message
     if (message.length < 10) {
       // Message court = encouragement
-      const encouragements = stepResponses.encouragements || ["Super ! 👍"]
+      const encouragements = (stepResponses as any).encouragements || ["Super ! 👍"]
       return encouragements[Math.floor(Math.random() * encouragements.length)]
     }
     
@@ -367,7 +367,7 @@ export class DynamicResponseGenerator {
     }
     
     // Sinon, conseil contextuel
-    const tips = stepResponses.tips || ["Continue, tu es sur la bonne voie ! 🚀"]
+    const tips = (stepResponses as any).tips || ["Continue, tu es sur la bonne voie ! 🚀"]
     return tips[Math.floor(Math.random() * tips.length)]
   }
   
